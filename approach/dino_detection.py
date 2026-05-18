@@ -1,3 +1,31 @@
+from pathlib import Path
+import sys
+import os
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+GROUNDING_DINO_ROOT = PROJECT_ROOT / "GroundingDINO"
+for path in (PROJECT_ROOT, GROUNDING_DINO_ROOT):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
+
+from config_loader import get_config
+
+
+def _apply_runtime_config() -> None:
+    runtime_config = get_config().get("runtime", {})
+    matplotlib_config_dir = runtime_config.get("matplotlib_config_dir")
+    if matplotlib_config_dir:
+        os.environ.setdefault("MPLCONFIGDIR", str(matplotlib_config_dir))
+        Path(matplotlib_config_dir).mkdir(parents=True, exist_ok=True)
+
+    xdg_cache_home = runtime_config.get("xdg_cache_home")
+    if xdg_cache_home:
+        os.environ.setdefault("XDG_CACHE_HOME", str(xdg_cache_home))
+        Path(xdg_cache_home).mkdir(parents=True, exist_ok=True)
+
+
+_apply_runtime_config()
+
 from GroundingDINO.groundingdino.util.inference import load_model, load_image, predict
 import cv2
 import numpy as np
@@ -26,15 +54,42 @@ def _select_dino_device() -> str:
 
 DINO_DEVICE = _select_dino_device()
 
-# Configuration for model and detection.
-CONFIG_PATH = "groundingdino/config/GroundingDINO_SwinB_cfg.py"
-WEIGHTS_PATH = "GroundingDINO/weights/groundingdino_swinb_cogcoor.pth"
-TEXT_PROMPT = "header bar. navigation bar. toolbar. button. icon. checkbox. toggle. text input. search bar. text field. image. card. list item. bottom navigation. tab bar"
-BOX_THRESHOLD = 0.25     # Lower threshold for more permissive region detection
-TEXT_THRESHOLD = 0.2
+MODEL = None
+MODEL_CONFIG_PATH = None
+MODEL_WEIGHTS_PATH = None
 
-# Load the DINO model only once to avoid reloads in repeated calls
-MODEL = load_model(CONFIG_PATH, WEIGHTS_PATH, device=DINO_DEVICE)
+
+def _dino_config() -> dict:
+    return get_config().get("dino", {})
+
+
+def _model():
+    """Load the configured DINO model once per config/weights pair."""
+    global MODEL, MODEL_CONFIG_PATH, MODEL_WEIGHTS_PATH
+    config = _dino_config()
+    config_path = config.get(
+        "config_path", "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+    )
+    weights_path = config.get(
+        "weights_path", "GroundingDINO/weights/groundingdino_swint_ogc.pth"
+    )
+
+    if (
+        MODEL is None
+        or MODEL_CONFIG_PATH != config_path
+        or MODEL_WEIGHTS_PATH != weights_path
+    ):
+        logger.info(
+            "Loading GroundingDINO model with config=%s weights=%s device=%s",
+            config_path,
+            weights_path,
+            DINO_DEVICE,
+        )
+        MODEL = load_model(config_path, weights_path, device=DINO_DEVICE)
+        MODEL_CONFIG_PATH = config_path
+        MODEL_WEIGHTS_PATH = weights_path
+
+    return MODEL
 
 def _as_cv2_image(image: np.ndarray | Image.Image) -> np.ndarray:
     """Convert supervision/PIL output to an OpenCV-compatible BGR array."""
@@ -59,14 +114,21 @@ def run_grounding_dino(image_path: str, output_path: str):
             - "box": [x1, y1, x2, y2] bounding box in image coords
     """
     image_source, image_tensor = load_image(image_path)
+    config = _dino_config()
+    text_prompt = config.get(
+        "text_prompt",
+        "header bar. navigation bar. toolbar. button. icon. checkbox. toggle. text input. search bar. text field. image. card. list item. bottom navigation. tab bar",
+    )
+    box_threshold = config.get("box_threshold", 0.25)
+    text_threshold = config.get("text_threshold", 0.2)
 
     # Run GroundingDINO on the image tensor
     boxes, logits, phrases = predict(
-        model=MODEL,
+        model=_model(),
         image=image_tensor,
-        caption=TEXT_PROMPT,
-        box_threshold=BOX_THRESHOLD,
-        text_threshold=TEXT_THRESHOLD,
+        caption=text_prompt,
+        box_threshold=box_threshold,
+        text_threshold=text_threshold,
         device=DINO_DEVICE,
     )
 

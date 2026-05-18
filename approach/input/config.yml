@@ -1,6 +1,10 @@
 # ViBR Configuration
 # All configurable values for the automation framework
 
+run:
+  app_name: "adaway"
+  quality: "bad"              # "good" | "bad"
+
 model:
   provider: "gemini"          # "openai" | "gemini"
   openai_model: "gpt-4o"
@@ -10,7 +14,7 @@ model:
   image_detail_live: "high"
 
 segmentation:
-  algorithm: "ssim"           # "ssim" | "clip"
+  algorithm: "clip"           # "ssim" | "clip"
   ssim:
     stable_sim_threshold: 0.95
     stable_interval_threshold: 3
@@ -32,8 +36,8 @@ replay:
   min_elements_threshold: 5
 
 dino:
-  config_path: "groundingdino/config/GroundingDINO_SwinB_cfg.py"
-  weights_path: "GroundingDINO/weights/groundingdino_swinb_cogcoor.pth"
+  config_path: "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+  weights_path: "GroundingDINO/weights/groundingdino_swint_ogc.pth"
   box_threshold: 0.25
   text_threshold: 0.2
   text_prompt: "header bar. navigation bar. toolbar. button. icon. checkbox. toggle. text input. search bar. text field. image. card. list item. bottom navigation. tab bar"
@@ -65,6 +69,10 @@ paths:
   apps_root: "apps"
   temp_root: "temp"
   video_filename_template: "{quality}-quality.mp4"
+
+runtime:
+  matplotlib_config_dir: "/tmp/matplotlib"
+  xdg_cache_home: "/tmp"
 
 logging:
   file_level: "DEBUG"

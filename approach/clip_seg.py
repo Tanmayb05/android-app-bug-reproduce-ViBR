@@ -25,6 +25,17 @@ from PIL import Image
 from transformers import CLIPProcessor, CLIPModel
 
 
+def _select_torch_device() -> str:
+    if torch.cuda.is_available():
+        return "cuda"
+
+    mps_backend = getattr(torch.backends, "mps", None)
+    if mps_backend is not None and mps_backend.is_available():
+        return "mps"
+
+    return "cpu"
+
+
 class VideoStableSegmentCLIP:
     """
     Video segmenter based on CLIP frame similarity.
@@ -47,11 +58,11 @@ class VideoStableSegmentCLIP:
             stable_interval_threshold: How many frames around an unstable
                 frame are also marked unstable (smoothing window).
             model_name: HuggingFace model identifier for CLIP.
-            device: 'cuda' or 'cpu'. Auto-detected if None.
+            device: 'cuda', 'mps', or 'cpu'. Auto-detected if None.
         """
         self.sim_threshold = stable_sim_threshold
         self.interval_threshold = stable_interval_threshold
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device or _select_torch_device()
         self.model = CLIPModel.from_pretrained(model_name).to(self.device)
         self.processor = CLIPProcessor.from_pretrained(model_name)
 
@@ -93,7 +104,8 @@ class VideoStableSegmentCLIP:
         with torch.no_grad():
             for i, frame in enumerate(frame_list):
                 inputs = self.processor(images=frame, return_tensors="pt").to(self.device)
-                feat = self.model.get_image_features(**inputs)
+                image_features = self.model.get_image_features(**inputs)
+                feat = getattr(image_features, "pooler_output", image_features)
                 feat = feat / feat.norm(p=2, dim=-1, keepdim=True)
                 embeddings.append(feat.squeeze(0).cpu())
                 print(f"  Encoded {i + 1}/{len(frame_list)}", end="\r")

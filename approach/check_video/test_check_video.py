@@ -152,6 +152,58 @@ def test_check_video_format_valid():
             assert reason is None
 
 
+def test_check_video_format_valid_string_bit_depth():
+    """Test ffprobe string bit depth values are handled."""
+    with patch("pathlib.Path.exists", return_value=True):
+        with patch(
+            "subprocess.run",
+            return_value=MagicMock(
+                returncode=0,
+                stdout="""{
+                    "streams": [{
+                        "codec_type": "video",
+                        "codec_name": "h264",
+                        "pix_fmt": "yuv420p",
+                        "color_transfer": "bt709",
+                        "color_primaries": "bt709",
+                        "color_space": "bt709",
+                        "bits_per_raw_sample": "8"
+                    }]
+                }""",
+            ),
+        ):
+            video_path = Path("/tmp/test.mp4")
+            is_valid, reason = check_video_format(video_path)
+            assert is_valid is True
+            assert reason is None
+
+
+def test_check_video_format_rejects_string_high_bit_depth():
+    """Test ffprobe string bit depth values over 8 fail."""
+    with patch("pathlib.Path.exists", return_value=True):
+        with patch(
+            "subprocess.run",
+            return_value=MagicMock(
+                returncode=0,
+                stdout="""{
+                    "streams": [{
+                        "codec_type": "video",
+                        "codec_name": "h264",
+                        "pix_fmt": "yuv420p",
+                        "color_transfer": "bt709",
+                        "color_primaries": "bt709",
+                        "color_space": "bt709",
+                        "bits_per_raw_sample": "10"
+                    }]
+                }""",
+            ),
+        ):
+            video_path = Path("/tmp/test.mp4")
+            is_valid, reason = check_video_format(video_path)
+            assert is_valid is False
+            assert "Bit depth 10" in reason
+
+
 def test_check_video_format_valid_no_color_space():
     """Test valid video with unspecified color space (default to OK)."""
     with patch("pathlib.Path.exists", return_value=True):

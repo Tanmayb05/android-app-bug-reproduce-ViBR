@@ -62,8 +62,14 @@ def check_video_format(video_path: Path) -> tuple[bool, str | None]:
 
     # Check bit depth
     bits_per_raw = video_stream.get("bits_per_raw_sample")
-    if bits_per_raw and bits_per_raw > 8:
-        return False, f"Bit depth {bits_per_raw}, need 8-bit or less"
+    if bits_per_raw:
+        try:
+            bit_depth = int(bits_per_raw)
+        except (TypeError, ValueError):
+            bit_depth = None
+
+        if bit_depth and bit_depth > 8:
+            return False, f"Bit depth {bits_per_raw}, need 8-bit or less"
 
     # Check for HDR markers
     color_transfer = video_stream.get("color_transfer", "unknown")

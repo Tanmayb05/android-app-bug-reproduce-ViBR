@@ -37,16 +37,21 @@ def setup_logger(
 
     # File handler (write mode — overwrites)
     file_handler = logging.FileHandler(log_file, mode="w")
-    file_handler.setLevel(logging.DEBUG)
+    logging_config = config.get("logging", {}) if config else {}
+    file_level = logging_config.get("file_level", "DEBUG")
+    console_level = logging_config.get("console_level", "INFO")
+    file_handler.setLevel(getattr(logging, str(file_level).upper()))
 
     # Console handler
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
+    console_handler.setLevel(getattr(logging, str(console_level).upper()))
 
     # Format
     formatter = logging.Formatter(
-        "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
+        logging_config.get(
+            "format", "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"
+        ),
+        datefmt=logging_config.get("date_format", "%Y-%m-%d %H:%M:%S"),
     )
     file_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)

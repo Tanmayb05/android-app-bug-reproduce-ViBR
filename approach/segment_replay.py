@@ -23,7 +23,6 @@ from adb_device_controller import ADBDeviceController
 from execute_action import execute_actions
 import yyh_utils  # Your video/frame utils (SSIM-based segmentation)
 from input_formatter import parse_xml_string, label_screenshot, AndroidElement
-from dino_detection import run_grounding_dino, annotate_relevant_regions
 from check_video import ensure_sdr_bt709
 
 logger = logging.getLogger(__name__)
@@ -39,9 +38,11 @@ Video input: apps/<app_name>/<quality>-quality.mp4
 Log output: apps/<app_name>/run_<quality>.log (overwrites each run)
 
 Usage:
-    python segment_replay.py <app_name> <good|bad> [--algo ssim|clip]
+    python segment_replay.py [app_name] [good|bad] [--config input/config.yml] [--algo ssim|clip]
+    python segment_replay.py
     python segment_replay.py gmail good
-    python segment_replay.py gmail bad --algo clip
+    python segment_replay.py gmail bad --config input/config.yml
+    python segment_replay.py gmail bad --config input/config.yml --algo clip
 """
 
 SUPPORTED_ALGORITHMS = ("ssim", "clip")
@@ -127,7 +128,14 @@ def match_action_to_element(
 # ---------------------------------------------------------------------------
 
 
-def segment_with_ssim(frames, y_frames, video_stem, cache_folder="./cache"):
+def segment_with_ssim(
+    frames,
+    y_frames,
+    video_stem,
+    cache_folder="./cache",
+    stable_sim_threshold=0.95,
+    stable_interval_threshold=3,
+):
     """Run SSIM-based stable-segment detection (original yyh_utils path)."""
     os.makedirs(cache_folder, exist_ok=True)
     sim_file = os.path.join(cache_folder, f"sim_list_ssim_{video_stem}.pkl")
@@ -143,8 +151,8 @@ def segment_with_ssim(frames, y_frames, video_stem, cache_folder="./cache"):
         logger.info("SSIM similarity list calculated and saved.")
 
     segmenter = yyh_utils.VideoStableSegment(
-        stable_sim_threshold=0.95,
-        stable_interval_threshold=3,
+        stable_sim_threshold=stable_sim_threshold,
+        stable_interval_threshold=stable_interval_threshold,
     )
     stable_segments = segmenter.detect_keyframes(sim_list)
     return stable_segments
@@ -156,6 +164,7 @@ def segment_with_clip(
     cache_folder="./cache",
     stable_sim_threshold=0.95,
     stable_interval_threshold=3,
+    model_name="openai/clip-vit-base-patch32",
 ):
     """Run CLIP-based stable-segment detection."""
     from clip_seg import VideoStableSegmentCLIP
@@ -166,6 +175,7 @@ def segment_with_clip(
     clip_segmenter = VideoStableSegmentCLIP(
         stable_sim_threshold=stable_sim_threshold,
         stable_interval_threshold=stable_interval_threshold,
+        model_name=model_name,
     )
 
     if os.path.exists(sim_file):
@@ -193,14 +203,62 @@ def segment_with_clip(
 # ---------------------------------------------------------------------------
 
 
-def main(app_name: str, quality: str, algorithm: str, apps_root: Path):
+def _apply_model_config(config: dict) -> None:
+    """Expose model config to provider modules through their existing env API."""
+    model_config = config.get("model", {})
+    provider = model_config.get("provider")
+    if provider:
+        os.environ["MODEL_PROVIDER"] = str(provider)
+    if model_config.get("openai_model"):
+        os.environ["OPENAI_MODEL"] = str(model_config["openai_model"])
+    if model_config.get("gemini_model"):
+        os.environ["GEMINI_MODEL"] = str(model_config["gemini_model"])
+
+
+def _apply_runtime_config(config: dict) -> None:
+    """Apply process-level runtime settings before heavy imports."""
+    runtime_config = config.get("runtime", {})
+    matplotlib_config_dir = runtime_config.get("matplotlib_config_dir")
+    if matplotlib_config_dir:
+        os.environ.setdefault("MPLCONFIGDIR", str(matplotlib_config_dir))
+        Path(matplotlib_config_dir).mkdir(parents=True, exist_ok=True)
+
+    xdg_cache_home = runtime_config.get("xdg_cache_home")
+    if xdg_cache_home:
+        os.environ.setdefault("XDG_CACHE_HOME", str(xdg_cache_home))
+        Path(xdg_cache_home).mkdir(parents=True, exist_ok=True)
+
+
+def main(
+    app_name: str | None = None,
+    quality: str | None = None,
+    algorithm: str | None = None,
+    config_path: Path | None = None,
+):
     """
     Main entry point: processes video and replays UI actions segment by segment.
     """
     # Load config and initialize stats
-    config = get_config()
+    config = get_config(config_path)
+    _apply_runtime_config(config)
+    _apply_model_config(config)
+
+    from dino_detection import run_grounding_dino, annotate_relevant_regions
+
+    run_config = config.get("run", {})
+    app_name = app_name or run_config.get("app_name")
+    quality = quality or run_config.get("quality")
+    if not app_name:
+        raise ValueError("Missing app_name. Pass it on the CLI or set run.app_name in config.")
+    if quality not in {"good", "bad"}:
+        raise ValueError("Missing/invalid quality. Pass good|bad on the CLI or set run.quality in config.")
+
+    path_config = config.get("paths", {})
+    apps_root = Path(path_config.get("apps_root", "apps"))
     app_dir = apps_root / app_name
     app_dir.mkdir(parents=True, exist_ok=True)
+
+    algorithm = (algorithm or config.get("segmentation", {}).get("algorithm", "clip")).lower()
 
     # Initialize logger with config dump
     setup_logger(app_name, quality, apps_root, config)
@@ -221,7 +279,6 @@ def main(app_name: str, quality: str, algorithm: str, apps_root: Path):
 
     ping_model_connections()
 
-    algorithm = algorithm.lower()
     if algorithm not in SUPPORTED_ALGORITHMS:
         logger.error(
             f"Unknown algorithm '{algorithm}'. Choose from: {SUPPORTED_ALGORITHMS}"
@@ -231,7 +288,8 @@ def main(app_name: str, quality: str, algorithm: str, apps_root: Path):
         sys.exit(1)
 
     # Resolve paths
-    video_path = apps_root / app_name / f"{quality}-quality.mp4"
+    video_template = path_config.get("video_filename_template", "{quality}-quality.mp4")
+    video_path = apps_root / app_name / video_template.format(quality=quality)
 
     if not video_path.exists():
         logger.error(f"Video not found: {video_path}")
@@ -256,29 +314,47 @@ def main(app_name: str, quality: str, algorithm: str, apps_root: Path):
     device = ADBDeviceController()
 
     video_stem = video_path.stem
-    temp_dir = Path("temp") / video_stem
+    replay_config = config.get("replay", {})
+    segmentation_config = config.get("segmentation", {})
+    temp_dir = Path(path_config.get("temp_root", "temp")) / video_stem
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     live_path = device.screenshot(index=0, save_path=str(temp_dir))
 
     frames, y_frames = yyh_utils.read_frames_from_video(
-        video_path, header_pixel_size=33
+        video_path, header_pixel_size=replay_config.get("header_crop_px", 33)
     )
 
     # ---- Segment detection (switchable) ----
     logger.info("Detecting stable segments...")
     if algorithm == "ssim":
-        stable_segments = segment_with_ssim(frames, y_frames, video_stem)
+        ssim_config = segmentation_config.get("ssim", {})
+        stable_segments = segment_with_ssim(
+            frames,
+            y_frames,
+            video_stem,
+            cache_folder=segmentation_config.get("cache_dir", "./cache"),
+            stable_sim_threshold=ssim_config.get("stable_sim_threshold", 0.95),
+            stable_interval_threshold=ssim_config.get("stable_interval_threshold", 3),
+        )
     else:
-        stable_segments = segment_with_clip(frames, video_stem)
+        clip_config = segmentation_config.get("clip", {})
+        stable_segments = segment_with_clip(
+            frames,
+            video_stem,
+            cache_folder=segmentation_config.get("cache_dir", "./cache"),
+            stable_sim_threshold=clip_config.get("stable_sim_threshold", 0.95),
+            stable_interval_threshold=clip_config.get("stable_interval_threshold", 3),
+            model_name=clip_config.get("model", "openai/clip-vit-base-patch32"),
+        )
 
-    if stable_segments[0][0] > 2:
+    if stable_segments[0][0] > segmentation_config.get("leading_segment_min_frame", 2):
         stable_segments = [(0, 1)] + stable_segments
 
     # ---- Per-segment replay loop (unchanged) ----
     stats.scenes = len(stable_segments) - 1
     for i in range(len(stable_segments) - 1):
-        time.sleep(0.5)
+        time.sleep(replay_config.get("inter_segment_sleep", 0.5))
         logger.info(f"Processing segment {i}...")
         stats.add_step(f"Processing segment {i}")
 
@@ -300,10 +376,17 @@ def main(app_name: str, quality: str, algorithm: str, apps_root: Path):
         # XML UI parse and clickable element detection
         xml_str = device.get_ui_xml()
         elements = parse_xml_string(
-            xml_str, bound_margin=10, min_cent_dist=20, clickable_only=True
+            xml_str,
+            bound_margin=replay_config.get("xml_parse_bound_margin", 10),
+            min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
+            clickable_only=True,
         )
-        if len(elements) <= 5:
-            elements = parse_xml_string(xml_str, bound_margin=10, min_cent_dist=20)
+        if len(elements) <= replay_config.get("min_elements_threshold", 5):
+            elements = parse_xml_string(
+                xml_str,
+                bound_margin=replay_config.get("xml_parse_bound_margin", 10),
+                min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
+            )
 
         labeled_path = label_screenshot(
             screenshot_path=live_path,
@@ -359,16 +442,23 @@ def main(app_name: str, quality: str, algorithm: str, apps_root: Path):
         )
 
         attempts = 0
-        max_attempts = 3
+        max_attempts = replay_config.get("max_state_alignment_retries", 3)
         while match["same_state"] != "yes" and attempts < max_attempts:
             logger.warning(
                 f"Attempting to align state (try {attempts + 1}/{max_attempts})..."
             )
             elements = parse_xml_string(
-                xml_str, bound_margin=10, min_cent_dist=20, clickable_only=True
+                xml_str,
+                bound_margin=replay_config.get("xml_parse_bound_margin", 10),
+                min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
+                clickable_only=True,
             )
-            if len(elements) <= 5:
-                elements = parse_xml_string(xml_str, bound_margin=10, min_cent_dist=20)
+            if len(elements) <= replay_config.get("min_elements_threshold", 5):
+                elements = parse_xml_string(
+                    xml_str,
+                    bound_margin=replay_config.get("xml_parse_bound_margin", 10),
+                    min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
+                )
 
             labeled_path = label_screenshot(
                 screenshot_path=live_path,
@@ -404,7 +494,7 @@ def main(app_name: str, quality: str, algorithm: str, apps_root: Path):
                     )
 
             execute_actions(device, [recovery_action])
-            time.sleep(1.0)
+            time.sleep(replay_config.get("post_recovery_sleep", 1.0))
             live_path = device.screenshot(index=0, save_path=str(step_out_dir))
             match = extract_json(
                 ask_gpt_state_consistency(str(tmp_start_path), live_path)
@@ -457,19 +547,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Segment and replay actions from video."
     )
-    parser.add_argument("app_name", type=str, help="Application name (e.g., gmail)")
+    parser.add_argument(
+        "app_name",
+        type=str,
+        nargs="?",
+        help="Application name override (default: run.app_name from config)",
+    )
     parser.add_argument(
         "quality",
         type=str,
+        nargs="?",
         choices=["good", "bad"],
-        help="Video quality (good or bad)",
+        help="Video quality override: good or bad (default: run.quality from config)",
     )
     parser.add_argument(
         "--algo",
         type=str,
-        default="ssim",
+        default=None,
         choices=SUPPORTED_ALGORITHMS,
-        help="Boundary detection algorithm: ssim or clip (default: ssim)",
+        help="Boundary detection algorithm override: ssim or clip (default: config value)",
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=Path(__file__).parent / "input" / "config.yml",
+        help="Path to YAML config file (default: approach/input/config.yml)",
     )
     args = parser.parse_args()
-    main(args.app_name, args.quality, args.algo, Path.cwd() / "apps")
+    main(args.app_name, args.quality, args.algo, args.config)

@@ -26,7 +26,21 @@ class BertModelWarper(nn.Module):
 
         self.get_extended_attention_mask = bert_model.get_extended_attention_mask
         self.invert_attention_mask = bert_model.invert_attention_mask
-        self.get_head_mask = bert_model.get_head_mask
+        self.get_head_mask = getattr(bert_model, "get_head_mask", self._get_head_mask)
+
+    def _get_head_mask(self, head_mask, num_hidden_layers):
+        if head_mask is None:
+            return [None] * num_hidden_layers
+
+        if head_mask.dim() == 1:
+            head_mask = head_mask.unsqueeze(0).unsqueeze(0).unsqueeze(-1).unsqueeze(-1)
+            head_mask = head_mask.expand(num_hidden_layers, -1, -1, -1, -1)
+        elif head_mask.dim() == 2:
+            head_mask = head_mask.unsqueeze(1).unsqueeze(-1).unsqueeze(-1)
+        else:
+            raise ValueError(f"head_mask.dim != 1 or 2, instead {head_mask.dim()}")
+
+        return head_mask.to(dtype=self.embeddings.word_embeddings.weight.dtype)
 
     def forward(
         self,
