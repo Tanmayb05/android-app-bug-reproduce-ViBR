@@ -1,0 +1,9 @@
+opencv-python
+openai
+google-genai
+Pillow
+scikit-image
+torch
+torchvision
+supervision
+transformers

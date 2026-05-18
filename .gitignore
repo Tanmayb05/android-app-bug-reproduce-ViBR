@@ -1,0 +1,83 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.python-version
+# Large local dependency tree; currently about 1.5 GB with thousands of files.
+.venv/
+venv/
+env/
+ENV/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Packaging / native build output
+build/
+dist/
+*.egg-info/
+*.so
+*.dylib
+*.dll
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE / local agent state
+.idea/
+.vscode/
+.cursor/
+.claude/
+# Local code-review graph cache/database; generated and can grow quickly.
+.code-review-graph/
+.mcp.json
+.opencode.json
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Android / ADB captures and local device output
+screenshots/
+screenrecordings/
+recordings/
+adb-output/
+uiautomator2/
+*.mp4
+*.webm
+
+# ML models, datasets, and generated outputs
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.safetensors
+*.h5
+*.pkl
+*.pickle
+/data/
+/datasets/
+/outputs/
+/output/
+/results/
+/runs/
+/artifacts/
+/checkpoints/
+# Large model checkpoints; current local files are hundreds of MB each.
+GroundingDINO/weights/
+GroundingDINO/groundingdino/weights/
