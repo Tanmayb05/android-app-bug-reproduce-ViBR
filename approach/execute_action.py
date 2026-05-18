@@ -1,4 +1,7 @@
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Human-readable action parser and execution script for Android ADB automation
 
@@ -15,7 +18,7 @@ def execute_actions(device, actions):
     Unknown actions are ignored with a warning.
     """
     for i, action in enumerate(actions):
-        print(f"[{i+1}] {action.get('description', 'Executing action')} -> {action['action']}")
+        logger.info(f"[{i+1}] {action.get('description', 'Executing action')} -> {action['action']}")
 
         if action["action"] == "tap":
             x, y = action["position"]
@@ -55,4 +58,4 @@ def execute_actions(device, actions):
             time.sleep(duration / 1000.0)
 
         else:
-            print(f"Unknown action type: {action['action']}")
+            logger.warning(f"Unknown action type: {action['action']}")

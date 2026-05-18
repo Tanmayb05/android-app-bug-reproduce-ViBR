@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 from itertools import groupby
 from skimage.metrics import structural_similarity as ssim
 

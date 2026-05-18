@@ -1,8 +1,14 @@
 from GroundingDINO.groundingdino.util.inference import load_model, load_image, predict
 import cv2
+import numpy as np
 import torch
 import supervision as sv
+import logging
+from PIL import Image
+from typing import cast
 from torchvision.ops import box_convert
+
+logger = logging.getLogger(__name__)
 
 """
 GroundingDINO region detection and annotation utilities.
@@ -11,8 +17,14 @@ GroundingDINO region detection and annotation utilities.
 - Provides annotation functions for highlighting both all detected regions and a subset of relevant regions.
 """
 
-# Force CPU usage for easier compatibility.
-device = torch.device("cpu")
+def _select_dino_device() -> str:
+    mps_backend = getattr(torch.backends, "mps", None)
+    if mps_backend is not None and mps_backend.is_available():
+        return "mps"
+    return "cpu"
+
+
+DINO_DEVICE = _select_dino_device()
 
 # Configuration for model and detection.
 CONFIG_PATH = "groundingdino/config/GroundingDINO_SwinB_cfg.py"
@@ -22,7 +34,13 @@ BOX_THRESHOLD = 0.25     # Lower threshold for more permissive region detection
 TEXT_THRESHOLD = 0.2
 
 # Load the DINO model only once to avoid reloads in repeated calls
-MODEL = load_model(CONFIG_PATH, WEIGHTS_PATH)
+MODEL = load_model(CONFIG_PATH, WEIGHTS_PATH, device=DINO_DEVICE)
+
+def _as_cv2_image(image: np.ndarray | Image.Image) -> np.ndarray:
+    """Convert supervision/PIL output to an OpenCV-compatible BGR array."""
+    if isinstance(image, Image.Image):
+        return cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2BGR)
+    return image
 
 def run_grounding_dino(image_path: str, output_path: str):
     """
@@ -49,13 +67,13 @@ def run_grounding_dino(image_path: str, output_path: str):
         caption=TEXT_PROMPT,
         box_threshold=BOX_THRESHOLD,
         text_threshold=TEXT_THRESHOLD,
-        device=device,
+        device=DINO_DEVICE,
     )
 
     if len(boxes) == 0:
-        print("⚠️ No regions detected by GroundingDINO.")
+        logger.warning("No regions detected by GroundingDINO.")
         cv2.imwrite(output_path, cv2.cvtColor(image_source, cv2.COLOR_RGB2BGR))
-        print(f"🔍 Annotated DINO output saved to {output_path}")
+        logger.info(f"Annotated DINO output saved to {output_path}")
         return []
 
     # Scale predicted boxes to image size and convert from (cx, cy, w, h) to (x1, y1, x2, y2)
@@ -77,8 +95,8 @@ def run_grounding_dino(image_path: str, output_path: str):
     annotated_frame = bbox_annotator.annotate(scene=annotated_frame, detections=detections)
     annotated_frame = label_annotator.annotate(scene=annotated_frame, detections=detections, labels=labels)
 
-    cv2.imwrite(output_path, annotated_frame)
-    print(f"🔍 Annotated DINO output saved to {output_path}")
+    cv2.imwrite(output_path, _as_cv2_image(annotated_frame))
+    logger.info(f"Annotated DINO output saved to {output_path}")
 
     # Return region metadata for downstream reasoning or annotation
     regions = []
@@ -110,10 +128,14 @@ def annotate_relevant_regions(image_path, output_path, regions, relevant_indices
     import cv2
 
     image = cv2.imread(image_path)
+    if image is None:
+        raise FileNotFoundError(f"Could not read image: {image_path}")
+    image = cast(np.ndarray, image)
+
     filtered_regions = [r for r in regions if r["index"] in relevant_indices]
 
     if not filtered_regions:
-        print("⚠️ No relevant regions to annotate.")
+        logger.warning("No relevant regions to annotate.")
         cv2.imwrite(output_path, image)
         return
 
@@ -121,13 +143,13 @@ def annotate_relevant_regions(image_path, output_path, regions, relevant_indices
     labels = [f"{r['index']}: {r['phrase']}" for r in filtered_regions]
 
     detections = sv.Detections(xyxy=boxes)
-    annotated = image.copy()
+    annotated = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
     bbox_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.INDEX)
     label_annotator = sv.LabelAnnotator(color_lookup=sv.ColorLookup.INDEX)
 
-    annotated = bbox_annotator.annotate(scene=annotated, detections=detections)
+    annotated = cast(Image.Image, bbox_annotator.annotate(scene=annotated, detections=detections))
     annotated = label_annotator.annotate(scene=annotated, detections=detections, labels=labels)
 
-    cv2.imwrite(output_path, annotated)
-    print(f"✅ Relevant-only annotation saved to {output_path}")
+    cv2.imwrite(output_path, _as_cv2_image(annotated))
+    logger.info(f"Relevant-only annotation saved to {output_path}")

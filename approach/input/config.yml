@@ -1,0 +1,73 @@
+# ViBR Configuration
+# All configurable values for the automation framework
+
+model:
+  provider: "gemini"          # "openai" | "gemini"
+  openai_model: "gpt-4o"
+  gemini_model: "gemini-2.5-flash"
+  image_detail_start: "low"
+  image_detail_stop: "low"
+  image_detail_live: "high"
+
+segmentation:
+  algorithm: "ssim"           # "ssim" | "clip"
+  ssim:
+    stable_sim_threshold: 0.95
+    stable_interval_threshold: 3
+  clip:
+    model: "openai/clip-vit-base-patch32"
+    stable_sim_threshold: 0.95
+    stable_interval_threshold: 3
+    frame_step: 1
+  cache_dir: "./cache"
+  leading_segment_min_frame: 2
+
+replay:
+  inter_segment_sleep: 0.5
+  max_state_alignment_retries: 3
+  post_recovery_sleep: 1.0
+  header_crop_px: 33
+  xml_parse_bound_margin: 10
+  xml_parse_min_center_distance: 20
+  min_elements_threshold: 5
+
+dino:
+  config_path: "groundingdino/config/GroundingDINO_SwinB_cfg.py"
+  weights_path: "GroundingDINO/weights/groundingdino_swinb_cogcoor.pth"
+  box_threshold: 0.25
+  text_threshold: 0.2
+  text_prompt: "header bar. navigation bar. toolbar. button. icon. checkbox. toggle. text input. search bar. text field. image. card. list item. bottom navigation. tab bar"
+
+adb:
+  pre_action_sleep: 0.2
+  default_swipe_duration_ms: 500
+  default_long_click_duration_ms: 1000
+  screenshot_remote_path: "/sdcard/screenshot-{index}.png"
+  ui_dump_remote_path: "/sdcard/ui_dump.xml"
+  ui_dump_local_path: "approach/temp/ui_dump.xml"
+
+actions:
+  double_tap_inter_click_sleep: 0.1
+  default_long_press_duration_ms: 1000
+  default_swipe_duration_ms: 500
+  default_wait_duration_ms: 1000
+
+visualization:
+  min_element_dim: 50
+  resize_factor: 5
+  font_scale: 1.0
+  line_thickness: 2
+  overlay_alpha: 0.8
+  rect_border_thickness: 4
+  image_resize_max_height: 600
+
+paths:
+  apps_root: "apps"
+  temp_root: "temp"
+  video_filename_template: "{quality}-quality.mp4"
+
+logging:
+  file_level: "DEBUG"
+  console_level: "INFO"
+  format: "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
