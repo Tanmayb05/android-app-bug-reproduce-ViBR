@@ -1,0 +1,239 @@
+# ViBR example configuration.
+#
+# Copy this file to `approach/input/config.yml` and edit values for a run.
+# Comments explain what each setting controls and how changing it affects the
+# automation workflow.
+
+run:
+  # App package/run name used to locate the app run directory.
+  # Combined with the selected model to form paths like:
+  #   apps/<app_name>-<provider_model>/
+  app_name: "adaway"
+
+  # Which recording quality to process.
+  # This controls the input video filename through `paths.video_filename_template`.
+  # Expected values are usually:
+  #   "good" -> good-video.mp4
+  #   "bad"  -> bad-video.mp4
+  quality: "good"
+
+model:
+  # LLM provider used for visual reasoning and action planning.
+  # Supported by the current code:
+  #   "openai"
+  #   "gemini"
+  provider: "gemini"
+
+  # OpenAI model name used when `provider` is "openai".
+  # Higher-capability models usually improve visual/action reasoning but cost more.
+  openai_model: "gpt-4o"
+
+  # Gemini model name used when `provider` is "gemini".
+  # Flash models are generally faster/cheaper; Pro models are generally stronger.
+  gemini_model: "gemini-2.5-pro"
+
+  # Image detail level for the start/reference screenshot sent to the model.
+  # Lower detail is cheaper/faster; higher detail can help with dense UI text.
+  image_detail_start: "low"
+
+  # Image detail level for the stop/target screenshot sent to the model.
+  # Increase when the target screen has small text or subtle visual changes.
+  image_detail_stop: "low"
+
+  # Image detail level for live/current screenshots during replay.
+  # Higher detail can improve state matching and action targeting.
+  image_detail_live: "high"
+
+segmentation:
+  # Algorithm used to split the video into stable UI segments.
+  # "clip" uses CLIP image embeddings and is better for semantic screen changes.
+  # "ssim" uses pixel-level similarity and is faster/simpler, but can be brittle
+  # when animations or camera movement are present.
+  algorithm: "clip"
+
+  ssim:
+    # SSIM similarity threshold for marking adjacent frames as stable.
+    # Higher values detect more changes and produce more/smaller segments.
+    # Lower values tolerate more visual difference and produce fewer/larger segments.
+    stable_sim_threshold: 0.95
+
+    # Number of frames around an unstable frame to also treat as unstable.
+    # Higher values smooth transitions more aggressively and can remove short
+    # flickers, but may merge or skip quick interactions.
+    stable_interval_threshold: 3
+
+  clip:
+    # Hugging Face CLIP model used for frame similarity embeddings.
+    # Changing this can change segment boundaries and may require clearing cache.
+    model: "openai/clip-vit-base-patch32"
+
+    # CLIP cosine-similarity threshold for adjacent frames.
+    # Higher values make segmentation more sensitive to visual/semantic changes.
+    # Lower values make it less sensitive and can merge steps together.
+    stable_sim_threshold: 0.95
+
+    # Number of frames around low-similarity frames treated as transition frames.
+    # Higher values reduce noisy boundaries but can hide very fast actions.
+    stable_interval_threshold: 3
+
+    # Standalone `clip_seg.py` can read every Nth frame using this value.
+    # Note: the current `segment_replay.py` CLIP path reads frames before calling
+    # CLIP segmentation, so this value may not affect normal replay runs unless
+    # the replay code is wired to pass it through.
+    frame_step: 1
+
+  # Directory for cached similarity lists.
+  # Reusing cache speeds up repeated runs on the same video.
+  # Clear relevant cache files after changing segmentation model/thresholds if
+  # results look stale.
+  cache_dir: "./cache"
+
+  # If the first stable segment begins after this many frames, the replay code
+  # inserts an initial segment starting at frame 0. This helps preserve the
+  # initial app state at the beginning of the recording.
+  leading_segment_min_frame: 2
+
+replay:
+  # Delay between processing detected video segments.
+  # Increase if the device/app needs more time to settle between actions.
+  inter_segment_sleep: 0.5
+
+  # Maximum attempts to recover or align the live device state with the expected
+  # video state before skipping/failing a segment.
+  max_state_alignment_retries: 3
+
+  # Delay after a recovery action before taking the next screenshot.
+  # Increase for slow apps or devices.
+  post_recovery_sleep: 1.0
+
+  # Pixels cropped from the top of screenshots before segmentation/comparison.
+  # This avoids status bar noise such as time, network, and battery changes.
+  header_crop_px: 33
+
+  # Margin applied when parsing UI XML bounds.
+  # Larger values make element matching more forgiving around edges.
+  xml_parse_bound_margin: 10
+
+  # Minimum center distance used to deduplicate or distinguish parsed UI elements.
+  # Increase to merge nearby duplicate elements; decrease to keep dense controls.
+  xml_parse_min_center_distance: 20
+
+  # Minimum number of UI elements expected from the XML dump before considering
+  # the parse useful. Too high can reject sparse screens; too low can accept bad dumps.
+  min_elements_threshold: 5
+
+dino:
+  # GroundingDINO model config path used for visual UI element detection.
+  config_path: "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+
+  # GroundingDINO weights path.
+  weights_path: "GroundingDINO/weights/groundingdino_swint_ogc.pth"
+
+  # Detection confidence threshold for bounding boxes.
+  # Higher values reduce false positives but may miss small or subtle UI elements.
+  box_threshold: 0.25
+
+  # Text matching threshold for the prompt phrases below.
+  # Higher values require stronger phrase alignment and may miss relevant controls.
+  text_threshold: 0.2
+
+  # Object phrases GroundingDINO should look for in screenshots.
+  # Add app-specific UI categories only when the generic terms miss important
+  # controls; overly broad prompts can add noisy boxes.
+  text_prompt: "header bar. navigation bar. toolbar. button. icon. checkbox. toggle. text input. search bar. text field. image. card. list item. bottom navigation. tab bar"
+
+adb:
+  # Delay before executing an ADB action.
+  # Increase when the app is visually settling or touch timing is unreliable.
+  pre_action_sleep: 0.2
+
+  # Default duration for swipe actions in milliseconds.
+  # Longer swipes are slower and may scroll less abruptly.
+  default_swipe_duration_ms: 500
+
+  # Default duration for long-click actions in milliseconds.
+  default_long_click_duration_ms: 1000
+
+  # Remote path on the Android device for captured screenshots.
+  # `{index}` is replaced by the screenshot number.
+  screenshot_remote_path: "/sdcard/screenshot-{index}.png"
+
+  # Remote path on the Android device for UIAutomator XML dumps.
+  ui_dump_remote_path: "/sdcard/ui_dump.xml"
+
+  # Local path where pulled UI XML dumps are stored.
+  ui_dump_local_path: "approach/temp/ui_dump.xml"
+
+actions:
+  # Delay between taps when performing a double-tap.
+  double_tap_inter_click_sleep: 0.1
+
+  # Default long-press duration for action execution.
+  default_long_press_duration_ms: 1000
+
+  # Default swipe duration for action execution.
+  default_swipe_duration_ms: 500
+
+  # Default wait action duration.
+  default_wait_duration_ms: 1000
+
+visualization:
+  # Minimum width/height for detected elements to be included in visual overlays.
+  # Increase to hide tiny/noisy boxes; decrease to show small controls.
+  min_element_dim: 50
+
+  # Resize factor for generated visualization images.
+  # Higher values make overlays larger/easier to inspect, but increase file size.
+  resize_factor: 5
+
+  # Font scale for labels in visualization overlays.
+  font_scale: 1.0
+
+  # Line thickness for overlay labels and shapes.
+  line_thickness: 2
+
+  # Opacity for overlay rectangles/fills.
+  # Lower values reveal more of the underlying screenshot.
+  overlay_alpha: 0.8
+
+  # Border thickness for detected-region rectangles.
+  rect_border_thickness: 4
+
+  # Maximum image height for resized visualization output.
+  # Lower values keep artifacts smaller; higher values preserve detail.
+  image_resize_max_height: 600
+
+paths:
+  # Root directory containing app run folders.
+  apps_root: "apps"
+
+  # Root directory for temporary workflow files.
+  temp_root: "temp"
+
+  # Template for selecting the input video inside an app run directory.
+  # `{quality}` is replaced by `run.quality`, for example `bad-video.mp4`.
+  video_filename_template: "{quality}-video.mp4"
+
+runtime:
+  # Matplotlib config directory.
+  # Pointing this to `/tmp` avoids permission issues in restricted environments.
+  matplotlib_config_dir: "/tmp/matplotlib"
+
+  # XDG cache location for libraries that respect XDG_CACHE_HOME.
+  # Pointing this to `/tmp` can avoid writing into user/global cache directories.
+  xdg_cache_home: "/tmp"
+
+logging:
+  # File logging verbosity.
+  # DEBUG is useful for diagnosing model decisions and replay failures.
+  file_level: "DEBUG"
+
+  # Console logging verbosity.
+  # INFO keeps terminal output readable; DEBUG is noisier but useful during debugging.
+  console_level: "INFO"
+
+  # Python logging format string.
+  format: "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"
+
+  # Timestamp format used by logs.
+  date_format: "%Y-%m-%d %H:%M:%S"

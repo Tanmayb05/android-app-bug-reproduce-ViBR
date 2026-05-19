@@ -1,0 +1,99 @@
+<h2>Video Screen Recording Analysis Prompt</h2>
+
+<p>
+Analyze the uploaded Android app screen recording and generate a structured JSON output.
+Break the video into meaningful interaction steps. Each step should describe what is visible,
+what the user does, what changes on screen, and the likely intent.
+</p>
+
+<h3>Required JSON Format</h3>
+
+<pre>
+{
+  "video_summary": {
+    "app_name": "",
+    "overall_goal": "",
+    "device_type": "Android",
+    "description": ""
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "00:00",
+      "timestamp_end": "00:00",
+      "screen_name": "",
+      "what_screen_is_visible": "",
+      "visible_ui_elements": [],
+      "user_gesture": "",
+      "target_element": "",
+      "system_response": "",
+      "navigation_change": "",
+      "data_entered": "",
+      "visual_feedback": "",
+      "intent_task": "",
+      "confidence": "high | medium | low"
+    }
+  ],
+  "detected_action_types": [],
+  "overall_flow": []
+}
+</pre>
+
+<h3>Instructions</h3>
+
+<ul>
+  <li>Use timestamps for every meaningful action.</li>
+  <li>Do not invent details that are not visible.</li>
+  <li>If text is unclear, write "unclear" instead of guessing.</li>
+  <li>Group small repeated actions into one step when appropriate.</li>
+  <li>Use simple action names like tap, scroll, swipe, type, back, open dialog, close dialog, wait.</li>
+  <li>Focus on Android app UI behavior, not background assumptions.</li>
+  <li>For intent, infer only from visible actions and UI context.</li>
+  <li>Return only valid JSON. No markdown. No explanation outside JSON.</li>
+</ul>
+
+<h3>Action Vocabulary</h3>
+
+<pre>
+tap
+double_tap
+long_press
+scroll_up
+scroll_down
+swipe_left
+swipe_right
+type_text
+delete_text
+open_keyboard
+close_keyboard
+press_back
+press_home
+open_dialog
+close_dialog
+submit
+select_item
+toggle
+drag
+wait
+screen_transition
+</pre>
+
+<h3>Output Requirements</h3>
+
+<p>
+The final response must be machine-readable JSON only.
+Each step should answer:
+</p>
+
+<ul>
+  <li>Timestamp</li>
+  <li>Screen Name</li>
+  <li>Visible UI Elements</li>
+  <li>User Gesture</li>
+  <li>Target Element</li>
+  <li>System Response</li>
+  <li>Navigation Change</li>
+  <li>Data Entered</li>
+  <li>Visual Feedback</li>
+  <li>Intent / Task</li>
+</ul>
