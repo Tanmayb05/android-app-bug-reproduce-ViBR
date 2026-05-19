@@ -1,7 +1,10 @@
 import os
 import base64
 import logging
+import time
 from typing import Any
+
+from run_stats import record_llm_response
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +48,10 @@ def ask(prompt: str, image_paths: list[str], details: list[str] | None = None) -
             }
         )
 
+    start = time.perf_counter()
     response = client().chat.completions.create(
         model=model(),
         messages=[{"role": "user", "content": content}],
     )
+    record_llm_response(time.perf_counter() - start, response)
     return (response.choices[0].message.content or "").strip()

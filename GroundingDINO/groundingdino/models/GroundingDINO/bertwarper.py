@@ -24,9 +24,20 @@ class BertModelWarper(nn.Module):
         self.encoder = bert_model.encoder
         self.pooler = bert_model.pooler
 
-        self.get_extended_attention_mask = bert_model.get_extended_attention_mask
+        self._bert_get_extended_attention_mask = bert_model.get_extended_attention_mask
         self.invert_attention_mask = bert_model.invert_attention_mask
         self.get_head_mask = getattr(bert_model, "get_head_mask", self._get_head_mask)
+
+    def _get_extended_attention_mask(self, attention_mask, input_shape, device):
+        dtype = self.embeddings.word_embeddings.weight.dtype
+        try:
+            return self._bert_get_extended_attention_mask(
+                attention_mask, input_shape, dtype=dtype
+            )
+        except TypeError:
+            return self._bert_get_extended_attention_mask(
+                attention_mask, input_shape, device
+            )
 
     def _get_head_mask(self, head_mask, num_hidden_layers):
         if head_mask is None:
@@ -86,7 +97,7 @@ class BertModelWarper(nn.Module):
             if output_hidden_states is not None
             else self.config.output_hidden_states
         )
-        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        return_dict = return_dict if return_dict is not None else self.config.return_dict
 
         if self.config.is_decoder:
             use_cache = use_cache if use_cache is not None else self.config.use_cache
@@ -120,7 +131,7 @@ class BertModelWarper(nn.Module):
 
         # We can provide a self-attention mask of dimensions [batch_size, from_seq_length, to_seq_length]
         # ourselves in which case we just need to make it broadcastable to all heads.
-        extended_attention_mask: torch.Tensor = self.get_extended_attention_mask(
+        extended_attention_mask: torch.Tensor = self._get_extended_attention_mask(
             attention_mask, input_shape, device
         )
 

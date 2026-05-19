@@ -57,10 +57,11 @@ class ADBDeviceController:
         time.sleep(self.pre_action_sleep)
         self._adb(["shell", "input", "keyevent", "4"])
 
-    def screenshot(self, index, save_path):
+    def screenshot(self, index, save_path, filename=None):
         """Take a screenshot and pull it from device to local path."""
         remote_path = self.screenshot_remote_path.format(index=index)
-        local_path = os.path.join(save_path, f"screenshot-{index}.png")
+        local_filename = filename or f"screenshot-{index}.png"
+        local_path = os.path.join(save_path, local_filename)
         print(f"Taking screenshot: {remote_path} -> {local_path}")
         self._adb(["shell", "/system/bin/screencap", "-p", remote_path])
         self._adb(["pull", remote_path, local_path])

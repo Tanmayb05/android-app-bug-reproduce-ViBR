@@ -6,8 +6,9 @@ import cv2
 import sys
 import argparse
 import logging
+import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 from math import hypot
 
 from logger import setup_logger
@@ -34,8 +35,8 @@ Supports two boundary-detection algorithms:
   - ssim : pixel-level structural similarity (via yyh_utils) — default
   - clip : CLIP embedding cosine similarity (via clip_seg)
 
-Video input: apps/<app_name>/<quality>-quality.mp4
-Log output: apps/<app_name>/run_<quality>.log (overwrites each run)
+Video input: apps/<app_name>/<quality>_video.mp4
+Log output: apps/<app_name>/<quality>_run.log (overwrites each run)
 
 Usage:
     python segment_replay.py [app_name] [good|bad] [--config input/config.yml] [--algo ssim|clip]
@@ -56,7 +57,11 @@ SUPPORTED_ALGORITHMS = ("ssim", "clip")
 def extract_json(reply_text):
     """
     Extracts JSON object from GPT reply (removes any markdown formatting).
+    Falls back to regex extraction if top-level parse fails.
     """
+    if not reply_text or not reply_text.strip():
+        raise ValueError("LLM returned empty response")
+
     reply_text = reply_text.strip()
     if reply_text.startswith("```json"):
         reply_text = reply_text[7:]
@@ -67,9 +72,154 @@ def extract_json(reply_text):
 
     try:
         return json.loads(reply_text.strip())
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON decoding failed: {e}")
-        raise
+    except json.JSONDecodeError:
+        # Fallback: extract first {...} block if top-level parse fails
+        m = re.search(r'\{.*\}', reply_text, re.DOTALL)
+        if m:
+            try:
+                return json.loads(m.group())
+            except json.JSONDecodeError:
+                pass
+        logger.error(f"JSON decoding failed; raw response: {reply_text!r}")
+        raise ValueError(
+            f"Could not extract valid JSON from LLM response: {reply_text!r}"
+        )
+
+
+ACTION_TYPES = {
+    "tap",
+    "double_tap",
+    "long_press",
+    "swipe",
+    "input_text",
+    "back",
+    "home",
+    "wait",
+    "no action",
+}
+
+
+def normalize_indices(value: Any) -> list[int]:
+    """Normalize an LLM region/index field into a list of integer indices."""
+    if value is None:
+        return []
+    if isinstance(value, bool):
+        return []
+    if isinstance(value, int):
+        return [value]
+    if isinstance(value, str):
+        try:
+            return [int(value)]
+        except ValueError:
+            return []
+    if isinstance(value, list):
+        indices: list[int] = []
+        for item in value:
+            indices.extend(normalize_indices(item))
+        return indices
+    return []
+
+
+def artifact_path(artifacts_dir: Path, step: int, source: str, name: str) -> Path:
+    """Build a flat artifact path using e=emulator and v=video source tags."""
+    if source not in {"e", "v"}:
+        raise ValueError("Artifact source must be 'e' or 'v'.")
+    return artifacts_dir / f"step_{step}{source}_{name}.png"
+
+
+def normalize_relevant_response(response: dict[str, Any]) -> dict[str, Any]:
+    target_regions = normalize_indices(response.get("target_regions"))
+    predicted_action = str(response.get("predicted_action", "no action")).strip().lower()
+    if predicted_action not in ACTION_TYPES:
+        logger.warning("Unknown predicted action %r; using no action.", predicted_action)
+        predicted_action = "no action"
+    return {
+        **response,
+        "target_regions": target_regions,
+        "predicted_action": predicted_action,
+    }
+
+
+def normalize_action_response(action: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(action)
+    action_type = str(normalized.get("action", "no action")).strip().lower()
+    if action_type not in ACTION_TYPES:
+        logger.warning("Unknown action %r; using no action.", action_type)
+        action_type = "no action"
+    normalized["action"] = action_type
+
+    region_indices = normalize_indices(normalized.get("region"))
+    if region_indices:
+        normalized["region"] = region_indices[0]
+        if len(region_indices) > 1:
+            normalized["regions"] = region_indices
+            logger.warning(
+                "LLM returned multiple regions %s; using first region %s.",
+                region_indices,
+                region_indices[0],
+            )
+    elif "region" in normalized:
+        normalized.pop("region", None)
+    return normalized
+
+
+def resolve_action_position(
+    action: dict[str, Any],
+    region_index_to_center: dict[int, tuple[int, int]],
+    elements: List[AndroidElement],
+    *,
+    context: str,
+) -> dict[str, Any]:
+    if "region" in action and action["region"] in region_index_to_center:
+        action["position"] = region_index_to_center[action["region"]]
+        logger.info(
+            "%s using region index: %s at %s",
+            context,
+            action["region"],
+            action["position"],
+        )
+        return action
+
+    matched_element = match_action_to_element(action, elements)
+    if matched_element:
+        action["position"] = matched_element.center
+        logger.info(
+            "%s matched element: %r at %s",
+            context,
+            matched_element.text,
+            matched_element.center,
+        )
+    return action
+
+
+def action_is_executable(action: dict[str, Any]) -> bool:
+    action_type = action.get("action")
+    if action_type in {"tap", "double_tap", "long_press"}:
+        return "position" in action
+    if action_type == "swipe":
+        return "from" in action and "to" in action
+    if action_type == "input_text":
+        return "text" in action
+    return action_type in {"back", "home", "wait", "no action"}
+
+
+def parse_live_elements(
+    device: ADBDeviceController, replay_config: dict[str, Any]
+) -> List[AndroidElement]:
+    xml_str = device.get_ui_xml()
+    elements = parse_xml_string(
+        xml_str,
+        bound_margin=replay_config.get("xml_parse_bound_margin", 10),
+        min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
+        clickable_only=True,
+    )
+    if len(elements) <= replay_config.get("min_elements_threshold", 5):
+        elements = parse_xml_string(
+            xml_str,
+            bound_margin=replay_config.get("xml_parse_bound_margin", 10),
+            min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
+        )
+    return elements
 
 
 def show_images(start_img, stop_img, current_img):
@@ -242,6 +392,8 @@ def main(
     config = get_config(config_path)
     _apply_runtime_config(config)
     _apply_model_config(config)
+    from model_api import _load_dotenv
+    _load_dotenv()
 
     from dino_detection import run_grounding_dino, annotate_relevant_regions
 
@@ -288,7 +440,7 @@ def main(
         sys.exit(1)
 
     # Resolve paths
-    video_template = path_config.get("video_filename_template", "{quality}-quality.mp4")
+    video_template = path_config.get("video_filename_template", "{quality}_video.mp4")
     video_path = apps_root / app_name / video_template.format(quality=quality)
 
     if not video_path.exists():
@@ -316,10 +468,9 @@ def main(
     video_stem = video_path.stem
     replay_config = config.get("replay", {})
     segmentation_config = config.get("segmentation", {})
-    temp_dir = Path(path_config.get("temp_root", "temp")) / video_stem
-    temp_dir.mkdir(parents=True, exist_ok=True)
-
-    live_path = device.screenshot(index=0, save_path=str(temp_dir))
+    # Output dir: apps/<app_name>/<quality>_artifacts/
+    artifacts_dir = Path(path_config.get("apps_root", "apps")) / app_name / f"{quality}_artifacts"
+    artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     frames, y_frames = yyh_utils.read_frames_from_video(
         video_path, header_pixel_size=replay_config.get("header_crop_px", 33)
@@ -358,65 +509,45 @@ def main(
         logger.info(f"Processing segment {i}...")
         stats.add_step(f"Processing segment {i}")
 
-        step_out_dir = temp_dir / f"step_{i}"
-        step_out_dir.mkdir(parents=True, exist_ok=True)
-
         start = stable_segments[i][1]
         stop = stable_segments[i + 1][0]
 
         start_img = frames[start]
         stop_img = frames[stop]
-        live_path = device.screenshot(index=0, save_path=str(step_out_dir))
+        live_path = device.screenshot(
+            index=0,
+            save_path=str(artifacts_dir),
+            filename=artifact_path(artifacts_dir, i, "e", "screenshot_0").name,
+        )
 
-        tmp_start_path = step_out_dir / "tmp_start.png"
-        tmp_stop_path = step_out_dir / "tmp_stop.png"
+        tmp_start_path = artifact_path(artifacts_dir, i, "v", "tmp_start")
+        tmp_stop_path = artifact_path(artifacts_dir, i, "v", "tmp_stop")
         cv2.imwrite(str(tmp_start_path), start_img)
         cv2.imwrite(str(tmp_stop_path), stop_img)
 
         # XML UI parse and clickable element detection
-        xml_str = device.get_ui_xml()
-        elements = parse_xml_string(
-            xml_str,
-            bound_margin=replay_config.get("xml_parse_bound_margin", 10),
-            min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
-            clickable_only=True,
-        )
-        if len(elements) <= replay_config.get("min_elements_threshold", 5):
-            elements = parse_xml_string(
-                xml_str,
-                bound_margin=replay_config.get("xml_parse_bound_margin", 10),
-                min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
-            )
+        elements = parse_live_elements(device, replay_config)
 
         labeled_path = label_screenshot(
             screenshot_path=live_path,
-            screenshot_dir=str(step_out_dir),
-            name="labeled",
+            screenshot_dir=str(artifacts_dir),
+            name=f"step_{i}e_labeled",
             elements=elements,
         )
-        current_img_labeled_xml_region = cv2.imread(labeled_path)
 
         # DINO detection for grounding region proposals
-        dino_out_path = step_out_dir / "dino.png"
+        dino_out_path = artifact_path(artifacts_dir, i, "v", "dino")
         dino_regions = run_grounding_dino(str(tmp_start_path), str(dino_out_path))
 
-        regions = []
-        for idx, e in enumerate(elements):
-            region = {
-                "index": idx,
-                "center": e.center,
-                "box": list(e.bounds),
-                "phrase": e.text if e.text else "unknown element",
-            }
-            regions.append(region)
-
         relevant = ask_gpt_for_relevant_regions(str(dino_out_path), str(tmp_stop_path))
-        relevant = extract_json(relevant)
+        relevant = normalize_relevant_response(extract_json(relevant))
         logger.info(f"Relevant regions: {relevant}")
         target_indices = relevant["target_regions"]
         logger.info(f"GPT selected regions: {target_indices}")
 
-        relevant_annotated_path = step_out_dir / "relevant_regions.png"
+        relevant_annotated_path = artifact_path(
+            artifacts_dir, i, "v", "relevant_regions"
+        )
         annotate_relevant_regions(
             str(tmp_start_path),
             str(relevant_annotated_path),
@@ -424,13 +555,7 @@ def main(
             target_indices,
         )
 
-        region_index_to_center = {r["index"]: r["center"] for r in regions}
-
-        show_images(
-            cv2.imread(str(relevant_annotated_path)),
-            stop_img,
-            current_img_labeled_xml_region,
-        )
+        dino_region_index_to_center = {r["index"]: r["center"] for r in dino_regions}
 
         match = extract_json(
             ask_gpt_state_consistency(
@@ -447,85 +572,78 @@ def main(
             logger.warning(
                 f"Attempting to align state (try {attempts + 1}/{max_attempts})..."
             )
-            elements = parse_xml_string(
-                xml_str,
-                bound_margin=replay_config.get("xml_parse_bound_margin", 10),
-                min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
-                clickable_only=True,
-            )
-            if len(elements) <= replay_config.get("min_elements_threshold", 5):
-                elements = parse_xml_string(
-                    xml_str,
-                    bound_margin=replay_config.get("xml_parse_bound_margin", 10),
-                    min_cent_dist=replay_config.get("xml_parse_min_center_distance", 20),
-                )
+            elements = parse_live_elements(device, replay_config)
+            live_region_index_to_center = {
+                idx: element.center for idx, element in enumerate(elements)
+            }
 
             labeled_path = label_screenshot(
                 screenshot_path=live_path,
-                screenshot_dir=str(step_out_dir),
-                name="labeled",
+                screenshot_dir=str(artifacts_dir),
+                name=f"step_{i}e_labeled",
                 elements=elements,
             )
 
             recovery_reply = ask_gpt_for_action_region(
                 str(tmp_start_path),
                 str(tmp_stop_path),
-                labeled_path,
+                str(labeled_path),
                 relevant["predicted_action"],
             )
-            recovery_action = extract_json(recovery_reply)
+            recovery_action = normalize_action_response(extract_json(recovery_reply))
+            recovery_action = resolve_action_position(
+                recovery_action,
+                live_region_index_to_center,
+                elements,
+                context="Recovery",
+            )
 
-            if (
-                "region" in recovery_action
-                and recovery_action["region"] in region_index_to_center
-            ):
-                recovery_action["position"] = region_index_to_center[
-                    recovery_action["region"]
-                ]
-                logger.info(
-                    f"Recovery using region index: {recovery_action['region']} at {recovery_action['position']}"
-                )
-            else:
-                matched_element = match_action_to_element(recovery_action, elements)
-                if matched_element:
-                    recovery_action["position"] = matched_element.center
-                    logger.info(
-                        f"Recovery matched element: '{matched_element.text}' at {matched_element.center}"
-                    )
+            if not action_is_executable(recovery_action):
+                logger.warning("Skipping invalid recovery action: %s", recovery_action)
+                break
 
             execute_actions(device, [recovery_action])
             time.sleep(replay_config.get("post_recovery_sleep", 1.0))
-            live_path = device.screenshot(index=0, save_path=str(step_out_dir))
+            live_path = device.screenshot(
+                index=0,
+                save_path=str(artifacts_dir),
+                filename=artifact_path(artifacts_dir, i, "e", "screenshot_0").name,
+            )
             match = extract_json(
                 ask_gpt_state_consistency(str(tmp_start_path), live_path)
             )
             attempts += 1
 
         if match["same_state"] == "yes":
+            elements = parse_live_elements(device, replay_config)
+            labeled_path = label_screenshot(
+                screenshot_path=live_path,
+                screenshot_dir=str(artifacts_dir),
+                name=f"step_{i}e_labeled",
+                elements=elements,
+            )
+
             reply = ask_gpt_for_action_region(
                 str(relevant_annotated_path),
                 str(tmp_stop_path),
-                labeled_path,
+                str(labeled_path),
                 relevant["predicted_action"],
                 target_indices,
             )
-            action = extract_json(reply)
+            action = normalize_action_response(extract_json(reply))
+            action = resolve_action_position(
+                action,
+                dino_region_index_to_center,
+                elements,
+                context="Replay",
+            )
 
-            matched_element = match_action_to_element(action, elements)
-            if "region" in action and action["region"] in region_index_to_center:
-                action["position"] = region_index_to_center[action["region"]]
-                logger.info(
-                    f"Using region index: {action['region']} at {action['position']}"
-                )
-            elif matched_element:
-                action["position"] = matched_element.center
-                logger.info(
-                    f"Matched element: '{matched_element.text}' at {matched_element.center}"
-                )
-            else:
+            if not action_is_executable(action):
                 logger.warning(
-                    "No valid region or element match. Using original position if available."
+                    "Skipping invalid action with no executable target: %s",
+                    action,
                 )
+                continue
 
             execute_actions(device, [action])
             logger.info("Action executed.")
@@ -535,8 +653,6 @@ def main(
                 f"Skipping action: current GUI state does not match start state. "
                 f"Mismatch reason: {match['description']}"
             )
-
-        input("Press Enter to continue...")
 
     logger.info("Video processing completed.")
     stats.status = "successful" if stats.actions_executed > 0 else "incomplete"

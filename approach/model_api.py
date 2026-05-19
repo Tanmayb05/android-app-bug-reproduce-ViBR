@@ -1,10 +1,12 @@
 import os
 import logging
+import time
 from pathlib import Path
 from typing import Any
 
 from providers import openai_provider, gemini_provider
 from prompts import state_consistency, action_region, relevant_regions
+from run_stats import record_llm_response
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +69,13 @@ def ping_model_connections() -> str:
     if openai_key:
         try:
             c = openai_provider.client(openai_key)
+            start = time.perf_counter()
             response = c.chat.completions.create(
                 model=openai_provider.model(),
                 messages=[{"role": "user", "content": "Reply with pong."}],
                 max_tokens=8,
             )
+            record_llm_response(time.perf_counter() - start, response)
             text = response.choices[0].message.content or ""
             statuses.append(f"OpenAI -> pong ({text.strip() or 'ok'})")
         except Exception as exc:
@@ -82,10 +86,12 @@ def ping_model_connections() -> str:
     if gemini_key:
         try:
             c = gemini_provider.client(gemini_key)
+            start = time.perf_counter()
             response = c.models.generate_content(
                 model=gemini_provider.model(),
                 contents="Reply with pong.",
             )
+            record_llm_response(time.perf_counter() - start, response)
             statuses.append(f"Gemini -> pong ({response.text.strip() or 'ok'})")
         except Exception as exc:
             statuses.append(f"Gemini -> failed ({exc})")

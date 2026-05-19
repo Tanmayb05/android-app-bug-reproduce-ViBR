@@ -48,6 +48,9 @@ def execute_actions(device, actions):
             device.swipe(x1, y1, x2, y2, duration)
 
         elif action["action"] == "input_text":
+            if "position" in action:
+                x, y = action["position"]
+                device.click(x, y)
             text = action["text"]
             device.input_text(text)
 

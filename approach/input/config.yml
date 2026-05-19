@@ -3,7 +3,7 @@
 
 run:
   app_name: "adaway"
-  quality: "bad"              # "good" | "bad"
+  quality: "good"              # "good" | "bad"
 
 model:
   provider: "gemini"          # "openai" | "gemini"
@@ -68,7 +68,7 @@ visualization:
 paths:
   apps_root: "apps"
   temp_root: "temp"
-  video_filename_template: "{quality}-quality.mp4"
+  video_filename_template: "{quality}_video.mp4"
 
 runtime:
   matplotlib_config_dir: "/tmp/matplotlib"

@@ -26,7 +26,7 @@ def setup_logger(
     app_dir.mkdir(parents=True, exist_ok=True)
 
     # Log file path (overwrites on each run)
-    log_file = app_dir / f"run_{quality}.log"
+    log_file = app_dir / f"{quality}_run.log"
 
     # Configure root logger
     root_logger = logging.getLogger()

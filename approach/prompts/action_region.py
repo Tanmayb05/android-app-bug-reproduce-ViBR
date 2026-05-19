@@ -7,9 +7,13 @@ def build(predicted_action: str, relevant_indices: list[int] | None = None) -> s
 
     On which element should you perform the action to achieve the same transition?
     Please follow the primitive in action space.
+    If you return "region", it must be exactly one integer index from the highlighted relevant
+    regions in the first screenshot. Do not return a list for "region". If no highlighted
+    relevant region applies, omit "region" and describe the action using coordinates or text.
 
     Possible actions:
-    1. tap - Example: {{ "action": "tap", "region": 2, "description": "Tap center of screen to open app." }}
+    1. tap - Example with highlighted region: {{ "action": "tap", "region": 2, "description": "Tap center of screen to open app." }}
+       tap - Example without highlighted region: {{ "action": "tap", "position": [540, 1200], "description": "Tap the matching button." }}
     2. swipe - Example: {{ "action": "swipe", "from": [540, 1600], "to": [540, 400], "duration": 500, "description": "Swipe up to scroll." }}
     3. input_text - Example: {{ "action": "input_text", "text": "hello world", "description": "Type search query." }}
     4. back - Example: {{ "action": "back", "description": "Go back to previous screen." }}

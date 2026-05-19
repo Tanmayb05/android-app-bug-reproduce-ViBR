@@ -3,7 +3,7 @@
 import time
 import logging
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Any, Literal
 from pathlib import Path
 import json
 
@@ -107,6 +107,48 @@ def get_run_stats() -> RunStats:
     return _current_stats
 
 
+def _read_usage_value(usage: Any, key: str) -> int:
+    """Read a token count from SDK objects or dict-like metadata."""
+    if usage is None:
+        return 0
+    if isinstance(usage, dict):
+        value = usage.get(key, 0)
+    else:
+        value = getattr(usage, key, 0)
+    return value if isinstance(value, int) else 0
+
+
+def response_token_count(response: Any) -> int:
+    """Best-effort token extraction for supported LLM SDK response objects."""
+    usage = getattr(response, "usage", None) or getattr(
+        response, "usage_metadata", None
+    )
+    total = _read_usage_value(usage, "total_tokens") or _read_usage_value(
+        usage, "total_token_count"
+    )
+    if total:
+        return total
+
+    return sum(
+        _read_usage_value(usage, key)
+        for key in (
+            "prompt_tokens",
+            "completion_tokens",
+            "prompt_token_count",
+            "candidates_token_count",
+            "thoughts_token_count",
+            "cached_content_token_count",
+        )
+    )
+
+
+def record_llm_response(latency_s: float, response: Any) -> None:
+    """Record an LLM response if a run stats tracker is active."""
+    if _current_stats is None:
+        return
+    _current_stats.record_llm_call(latency_s, response_token_count(response))
+
+
 def log_run_summary(app_dir: Path) -> None:
     """Log structured summary at end of run."""
     if _current_stats is None:
@@ -120,7 +162,7 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info("RUN SUMMARY")
     logger.info("=" * 80)
     logger.info(f"App: {_current_stats.app_name}")
-    logger.info(f"Video: {_current_stats.video_quality}-quality.mp4")
+    logger.info(f"Video: {_current_stats.video_quality}_video.mp4")
     logger.info(f"Provider + Model: {_current_stats.provider} / {_current_stats.model}")
     logger.info(f"Algorithm: {_current_stats.algorithm}")
     logger.info(f"Status: {_current_stats.status}")
@@ -133,8 +175,8 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info(f"Total duration: {_current_stats.duration_s:.2f}s")
     logger.info("=" * 80)
 
-    # Also write JSON summary to apps/<app_name>/run_summary.json
-    summary_path = app_dir / f"run_{_current_stats.video_quality}_summary.json"
+    # Also write JSON summary to apps/<app_name>/<quality>_run_summary.json
+    summary_path = app_dir / f"{_current_stats.video_quality}_run_summary.json"
     with open(summary_path, "w") as f:
         json.dump(_current_stats.to_dict(), f, indent=2)
     logger.info(f"Summary written to {summary_path}")
