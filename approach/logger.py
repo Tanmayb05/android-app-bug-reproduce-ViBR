@@ -5,28 +5,25 @@ from typing import Any
 
 
 def setup_logger(
-    app_name: str,
+    app_dir: Path,
     quality: str,
-    apps_root: Path,
     config: dict[str, Any] | None = None,
 ) -> logging.Logger:
     """Configure root logger for a run and log config.
 
     Args:
-        app_name: Application name (e.g., "gmail")
+        app_dir: Directory for this app/model run
         quality: Video quality ("good" or "bad")
-        apps_root: Path to apps directory
         config: Optional config dict to log at start
 
     Returns:
         Configured root logger
     """
     # Create app directory if needed
-    app_dir = apps_root / app_name
     app_dir.mkdir(parents=True, exist_ok=True)
 
     # Log file path (overwrites on each run)
-    log_file = app_dir / f"{quality}_run.log"
+    log_file = app_dir / f"{quality}-run.log"
 
     # Configure root logger
     root_logger = logging.getLogger()

@@ -35,8 +35,8 @@ Supports two boundary-detection algorithms:
   - ssim : pixel-level structural similarity (via yyh_utils) — default
   - clip : CLIP embedding cosine similarity (via clip_seg)
 
-Video input: apps/<app_name>/<quality>_video.mp4
-Log output: apps/<app_name>/<quality>_run.log (overwrites each run)
+Video input: apps/<app_name>-<provider_model>/<quality>-video.mp4
+Log output: apps/<app_name>-<provider_model>/<quality>-run.log (overwrites each run)
 
 Usage:
     python segment_replay.py [app_name] [good|bad] [--config input/config.yml] [--algo ssim|clip]
@@ -125,6 +125,21 @@ def artifact_path(artifacts_dir: Path, step: int, source: str, name: str) -> Pat
     if source not in {"e", "v"}:
         raise ValueError("Artifact source must be 'e' or 'v'.")
     return artifacts_dir / f"step_{step}{source}_{name}.png"
+
+
+def provider_model_name(config: dict[str, Any]) -> str:
+    """Return the model selected by model.provider in config."""
+    model_config = config.get("model", {})
+    provider = str(model_config.get("provider", "")).strip()
+    model_key = f"{provider}_model"
+    return str(model_config.get(model_key, "unknown")).strip() or "unknown"
+
+
+def safe_app_run_dir_name(app_name: str, model: str) -> str:
+    """Build apps/<app_name>-<model> without allowing path separators."""
+    safe_app_name = re.sub(r"[^A-Za-z0-9._-]+", "_", app_name.strip())
+    safe_model = re.sub(r"[^A-Za-z0-9._-]+", "_", model.strip())
+    return f"{safe_app_name}-{safe_model}"
 
 
 def normalize_relevant_response(response: dict[str, Any]) -> dict[str, Any]:
@@ -407,18 +422,18 @@ def main(
 
     path_config = config.get("paths", {})
     apps_root = Path(path_config.get("apps_root", "apps"))
-    app_dir = apps_root / app_name
+    provider = config["model"]["provider"]
+    model = provider_model_name(config)
+    app_dir_name = safe_app_run_dir_name(app_name, model)
+    app_dir = apps_root / app_dir_name
     app_dir.mkdir(parents=True, exist_ok=True)
 
     algorithm = (algorithm or config.get("segmentation", {}).get("algorithm", "clip")).lower()
 
     # Initialize logger with config dump
-    setup_logger(app_name, quality, apps_root, config)
+    setup_logger(app_dir, quality, config)
 
     # Initialize run stats tracker
-    provider = config["model"]["provider"]
-    model_key = f"{provider}_model"
-    model = config["model"].get(model_key, "unknown")
     init_run_stats(
         app_name=app_name,
         video_quality=quality,
@@ -440,8 +455,8 @@ def main(
         sys.exit(1)
 
     # Resolve paths
-    video_template = path_config.get("video_filename_template", "{quality}_video.mp4")
-    video_path = apps_root / app_name / video_template.format(quality=quality)
+    video_template = path_config.get("video_filename_template", "{quality}-video.mp4")
+    video_path = app_dir / video_template.format(quality=quality)
 
     if not video_path.exists():
         logger.error(f"Video not found: {video_path}")
@@ -468,8 +483,8 @@ def main(
     video_stem = video_path.stem
     replay_config = config.get("replay", {})
     segmentation_config = config.get("segmentation", {})
-    # Output dir: apps/<app_name>/<quality>_artifacts/
-    artifacts_dir = Path(path_config.get("apps_root", "apps")) / app_name / f"{quality}_artifacts"
+    # Output dir: apps/<app_name>-<provider_model>/<quality>-artifacts/
+    artifacts_dir = app_dir / f"{quality}-artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     frames, y_frames = yyh_utils.read_frames_from_video(

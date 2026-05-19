@@ -126,7 +126,7 @@ This required manual intervention after every segment, preventing unattended run
 **File:** `approach/segment_replay.py:321-325`
 **Symptom:** Per-segment outputs (DINO, XML labels, relevant regions) saved to `temp/<video_stem>/step_<i>/` instead of app-specific location. Hard to locate artifacts after run.
 **Cause:** Output dir set to temp root by default.
-**Fix:** Changed output path from `Path("temp") / video_stem / f"step_{i}"` to `Path("apps") / app_name / f"{quality}_artifacts" / f"step_{i}"`. All downstream saves automatically use new path. Applied.
+**Fix:** Changed output path from `Path("temp") / video_stem / f"step_{i}"` to `Path("apps") / app_name / f"{quality}-artifacts" / f"step_{i}"`. All downstream saves automatically use new path. Applied.
 
 ---
 
@@ -197,7 +197,7 @@ TypeError: cannot use 'list' as a dict key (unhashable type: 'list')
 - `approach/providers/openai_provider.py`
 - `approach/model_api.py`
 
-**Symptom:** `bad_run_summary.json` showed:
+**Symptom:** `bad-run-summary.json` showed:
 ```
 "llm_calls": 0,
 "tokens_used": 0

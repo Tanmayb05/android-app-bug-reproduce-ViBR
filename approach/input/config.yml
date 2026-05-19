@@ -8,7 +8,7 @@ run:
 model:
   provider: "gemini"          # "openai" | "gemini"
   openai_model: "gpt-4o"
-  gemini_model: "gemini-2.5-flash"
+  gemini_model: "gemini-2.5-pro" # "gemini-2.5-flash" | "gemini-2.5-flash"
   image_detail_start: "low"
   image_detail_stop: "low"
   image_detail_live: "high"
@@ -68,7 +68,7 @@ visualization:
 paths:
   apps_root: "apps"
   temp_root: "temp"
-  video_filename_template: "{quality}_video.mp4"
+  video_filename_template: "{quality}-video.mp4"
 
 runtime:
   matplotlib_config_dir: "/tmp/matplotlib"

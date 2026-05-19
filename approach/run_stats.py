@@ -162,7 +162,7 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info("RUN SUMMARY")
     logger.info("=" * 80)
     logger.info(f"App: {_current_stats.app_name}")
-    logger.info(f"Video: {_current_stats.video_quality}_video.mp4")
+    logger.info(f"Video: {_current_stats.video_quality}-video.mp4")
     logger.info(f"Provider + Model: {_current_stats.provider} / {_current_stats.model}")
     logger.info(f"Algorithm: {_current_stats.algorithm}")
     logger.info(f"Status: {_current_stats.status}")
@@ -175,8 +175,8 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info(f"Total duration: {_current_stats.duration_s:.2f}s")
     logger.info("=" * 80)
 
-    # Also write JSON summary to apps/<app_name>/<quality>_run_summary.json
-    summary_path = app_dir / f"{_current_stats.video_quality}_run_summary.json"
+    # Also write JSON summary to apps/<app_name>-<provider_model>/<quality>-run-summary.json
+    summary_path = app_dir / f"{_current_stats.video_quality}-run-summary.json"
     with open(summary_path, "w") as f:
         json.dump(_current_stats.to_dict(), f, indent=2)
     logger.info(f"Summary written to {summary_path}")

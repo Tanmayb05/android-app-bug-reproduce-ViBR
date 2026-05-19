@@ -8,6 +8,8 @@ from segment_replay import (
     artifact_path,
     normalize_action_response,
     normalize_relevant_response,
+    provider_model_name,
+    safe_app_run_dir_name,
 )
 
 
@@ -54,3 +56,29 @@ def test_artifact_path_rejects_unknown_source(tmp_path):
         assert "source" in str(exc)
     else:
         raise AssertionError("Expected artifact_path to reject unknown source")
+
+
+def test_provider_model_name_uses_selected_provider_model():
+    config = {
+        "model": {
+            "provider": "gemini",
+            "openai_model": "gpt-4o",
+            "gemini_model": "gemini-2.5-flash",
+        }
+    }
+
+    assert provider_model_name(config) == "gemini-2.5-flash"
+
+
+def test_safe_app_run_dir_name_uses_app_dash_model():
+    assert (
+        safe_app_run_dir_name("adaway", "gemini-2.5-flash")
+        == "adaway-gemini-2.5-flash"
+    )
+
+
+def test_safe_app_run_dir_name_replaces_path_separators():
+    assert (
+        safe_app_run_dir_name("demo app", "provider/model")
+        == "demo_app-provider_model"
+    )

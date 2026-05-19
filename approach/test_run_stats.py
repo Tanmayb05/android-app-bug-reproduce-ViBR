@@ -83,5 +83,6 @@ def test_log_run_summary_writes_quality_prefixed_summary(tmp_path):
     finally:
         run_stats._current_stats = previous_stats
 
-    assert (tmp_path / "bad_run_summary.json").exists()
+    assert (tmp_path / "bad-run-summary.json").exists()
     assert not (tmp_path / "run_bad_summary.json").exists()
+    assert not (tmp_path / "bad_run_summary.json").exists()
