@@ -1,9 +1,9 @@
-<h2>Video Screen Recording Analysis Prompt</h2>
+<h2>Android App Screen Recording Analysis Prompt</h2>
 
 <p>
 Analyze the uploaded Android app screen recording and generate a structured JSON output.
-Break the video into meaningful interaction steps. Each step should describe what is visible,
-what the user does, what changes on screen, and the likely intent.
+Break the video into meaningful interaction steps. Each step should describe what screen is visible,
+what the user does, what changes on screen, and the likely user intent.
 </p>
 
 <h3>Required JSON Format</h3>
@@ -35,21 +35,23 @@ what the user does, what changes on screen, and the likely intent.
     }
   ],
   "detected_action_types": [],
-  "overall_flow": []
+  "overall_flow": [],
+  "human_readable_step_summary": []
 }
 </pre>
 
 <h3>Instructions</h3>
 
 <ul>
-  <li>Use timestamps for every meaningful action.</li>
-  <li>Do not invent details that are not visible.</li>
-  <li>If text is unclear, write "unclear" instead of guessing.</li>
-  <li>Group small repeated actions into one step when appropriate.</li>
-  <li>Use simple action names like tap, scroll, swipe, type, back, open dialog, close dialog, wait.</li>
-  <li>Focus on Android app UI behavior, not background assumptions.</li>
-  <li>For intent, infer only from visible actions and UI context.</li>
-  <li>Return only valid JSON. No markdown. No explanation outside JSON.</li>
+  <li>Use timestamps for every meaningful user action or screen change.</li>
+  <li>Do not invent app names, button names, text, or actions that are not visible.</li>
+  <li>If any text or UI element is unclear, write "unclear" instead of guessing.</li>
+  <li>Group very small repeated actions into one step when they serve the same purpose.</li>
+  <li>Use simple action names from the action vocabulary.</li>
+  <li>Focus only on visible Android app UI behavior.</li>
+  <li>Do not assume background logic, user identity, account details, or hidden app behavior.</li>
+  <li>For intent, infer only from the visible action and screen context.</li>
+  <li>Return only valid JSON. Do not include markdown, comments, or explanation outside the JSON.</li>
 </ul>
 
 <h3>Action Vocabulary</h3>
@@ -78,22 +80,48 @@ wait
 screen_transition
 </pre>
 
-<h3>Output Requirements</h3>
-
-<p>
-The final response must be machine-readable JSON only.
-Each step should answer:
-</p>
+<h3>Field Guidelines</h3>
 
 <ul>
-  <li>Timestamp</li>
-  <li>Screen Name</li>
-  <li>Visible UI Elements</li>
-  <li>User Gesture</li>
-  <li>Target Element</li>
-  <li>System Response</li>
-  <li>Navigation Change</li>
-  <li>Data Entered</li>
-  <li>Visual Feedback</li>
-  <li>Intent / Task</li>
+  <li><strong>app_name:</strong> Name of the app if visible. If not visible, use "unclear".</li>
+  <li><strong>overall_goal:</strong> The likely purpose of the full user flow based on visible actions.</li>
+  <li><strong>description:</strong> A short summary of what happens in the recording.</li>
+  <li><strong>screen_name:</strong> Name of the current screen if visible or reasonably clear.</li>
+  <li><strong>what_screen_is_visible:</strong> Plain description of the screen shown.</li>
+  <li><strong>visible_ui_elements:</strong> List of visible buttons, menus, tabs, fields, cards, dialogs, icons, or labels.</li>
+  <li><strong>user_gesture:</strong> One action from the action vocabulary.</li>
+  <li><strong>target_element:</strong> The UI element the user interacted with.</li>
+  <li><strong>system_response:</strong> What the app did after the action.</li>
+  <li><strong>navigation_change:</strong> Describe screen change, dialog open/close, drawer open/close, or write "none".</li>
+  <li><strong>data_entered:</strong> Any typed or selected data. If none, use an empty string.</li>
+  <li><strong>visual_feedback:</strong> Any visible feedback such as highlight, loading, popup, animation, selected state, or error.</li>
+  <li><strong>intent_task:</strong> The likely reason the user performed the action.</li>
+  <li><strong>confidence:</strong> Use "high" when clearly visible, "medium" when partially inferred, and "low" when uncertain.</li>
+</ul>
+
+<h3>Human-Readable Summary Requirement</h3>
+
+<p>
+At the end of the JSON, include a field called <code>human_readable_step_summary</code>.
+This must be a list of simple plain-English step descriptions.
+Each item should summarize the matching detailed step in a way a non-technical person can understand.
+</p>
+
+<p>
+Each summary item should follow this style:
+</p>
+
+<pre>
+"Step 1: The app opens on the main screen and shows the available options.",
+"Step 2: The user taps a button to open the next screen.",
+"Step 3: The user scrolls down to view more content."
+</pre>
+
+<h3>Output Requirements</h3>
+
+<ul>
+  <li>The final response must be valid JSON only.</li>
+  <li>Do not wrap the JSON in markdown.</li>
+  <li>Do not add explanations before or after the JSON.</li>
+  <li>Make sure every detailed step has a matching simple summary in <code>human_readable_step_summary</code>.</li>
 </ul>

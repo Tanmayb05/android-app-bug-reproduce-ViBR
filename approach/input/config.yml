@@ -2,8 +2,8 @@
 # All configurable values for the automation framework
 
 run:
-  app_name: "adaway"
-  quality: "good"              # "good" | "bad"
+  app_name: "wifianalyzer2"
+  quality: "bad"              # "good" | "bad"
 
 model:
   provider: "gemini"          # "openai" | "gemini"
