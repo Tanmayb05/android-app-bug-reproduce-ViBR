@@ -625,7 +625,7 @@ def main(
                 filename=artifact_path(artifacts_dir, i, "e", "screenshot_0").name,
             )
             match = extract_json(
-                ask_gpt_state_consistency(str(tmp_start_path), live_path)
+                ask_gpt_state_consistency(str(tmp_stop_path), live_path)
             )
             attempts += 1
 
