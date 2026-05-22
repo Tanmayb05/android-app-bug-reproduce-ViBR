@@ -540,6 +540,8 @@ def main(
         cv2.imwrite(str(tmp_start_path), start_img)
         cv2.imwrite(str(tmp_stop_path), stop_img)
 
+        screenshot_attempt_index = 0
+
         # XML UI parse and clickable element detection
         elements = parse_live_elements(device, replay_config)
 
@@ -572,6 +574,9 @@ def main(
 
         dino_region_index_to_center = {r["index"]: r["center"] for r in dino_regions}
 
+        logger.info(
+            f"Comparing state: reference={relevant_annotated_path.name} vs live={Path(live_path).name}"
+        )
         match = extract_json(
             ask_gpt_state_consistency(
                 str(relevant_annotated_path),
@@ -619,10 +624,14 @@ def main(
 
             execute_actions(device, [recovery_action])
             time.sleep(replay_config.get("post_recovery_sleep", 1.0))
+            screenshot_attempt_index += 1
             live_path = device.screenshot(
                 index=0,
                 save_path=str(artifacts_dir),
-                filename=artifact_path(artifacts_dir, i, "e", "screenshot_0").name,
+                filename=artifact_path(artifacts_dir, i, "e", f"screenshot_{screenshot_attempt_index}").name,
+            )
+            logger.info(
+                f"Comparing state (recovery attempt {attempts + 1}): reference={tmp_stop_path.name} vs live={Path(live_path).name}"
             )
             match = extract_json(
                 ask_gpt_state_consistency(str(tmp_stop_path), live_path)

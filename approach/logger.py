@@ -22,8 +22,9 @@ def setup_logger(
     # Create app directory if needed
     app_dir.mkdir(parents=True, exist_ok=True)
 
-    # Log file path (overwrites on each run)
+    # Log file paths (overwrites on each run)
     log_file = app_dir / f"{quality}-run.log"
+    debug_log_file = app_dir / f"{quality}-run-debug.log"
 
     # Configure root logger
     root_logger = logging.getLogger()
@@ -32,14 +33,17 @@ def setup_logger(
     # Remove existing handlers to avoid duplicates
     root_logger.handlers.clear()
 
-    # File handler (write mode — overwrites)
+    # Normal file handler (INFO level)
     file_handler = logging.FileHandler(log_file, mode="w")
-    logging_config = config.get("logging", {}) if config else {}
-    file_level = logging_config.get("file_level", "DEBUG")
-    console_level = logging_config.get("console_level", "INFO")
-    file_handler.setLevel(getattr(logging, str(file_level).upper()))
+    file_handler.setLevel(logging.INFO)
+
+    # Debug file handler (DEBUG level)
+    debug_handler = logging.FileHandler(debug_log_file, mode="w")
+    debug_handler.setLevel(logging.DEBUG)
 
     # Console handler
+    logging_config = config.get("logging", {}) if config else {}
+    console_level = logging_config.get("console_level", "INFO")
     console_handler = logging.StreamHandler()
     console_handler.setLevel(getattr(logging, str(console_level).upper()))
 
@@ -51,10 +55,12 @@ def setup_logger(
         datefmt=logging_config.get("date_format", "%Y-%m-%d %H:%M:%S"),
     )
     file_handler.setFormatter(formatter)
+    debug_handler.setFormatter(formatter)
     console_handler.setFormatter(formatter)
 
     # Add handlers
     root_logger.addHandler(file_handler)
+    root_logger.addHandler(debug_handler)
     root_logger.addHandler(console_handler)
 
     # Log config at start if provided
