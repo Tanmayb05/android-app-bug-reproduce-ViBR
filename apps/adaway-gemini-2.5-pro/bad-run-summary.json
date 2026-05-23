@@ -1,0 +1,21 @@
+{
+  "app_name": "adaway",
+  "video_quality": "bad",
+  "provider": "gemini",
+  "model": "gemini-2.5-pro",
+  "algorithm": "clip",
+  "status": "successful",
+  "scenes": 3,
+  "actions_executed": 1,
+  "llm_calls": 20,
+  "llm_total_latency_s": 324.72,
+  "llm_avg_latency_s": 16.24,
+  "tokens_used": 51933,
+  "duration_s": 391.95,
+  "steps_taken": [
+    "Initialized configuration and device controller",
+    "Processing segment 0",
+    "Processing segment 1",
+    "Processing segment 2"
+  ]
+}
