@@ -220,3 +220,21 @@ while logs showed multiple Gemini requests.
 ./.venv/bin/python -m pytest approach/test_segment_replay_contracts.py approach/test_execute_action.py approach/test_run_stats.py approach/check_video/test_check_video.py
 ```
 **Result:** `22 passed`.
+
+---
+
+## 2026-05-27 22:48 — app: vanilla-gemini-2.5-pro | quality: good | algo: clip | provider: gemini
+
+### CRITICAL — IndexError: segment detection generates out-of-bounds frame indices (IN PROGRESS)
+
+**File:** `approach/segment_replay.py:530`
+**Symptom:** Crash at segment 4:
+```
+IndexError: list index out of range
+  File "approach/segment_replay.py", line 530, in main
+    start_img = frames[start]
+                ~~~~~~^^^^^^^
+```
+Segment 3 completes successfully, segment 4 fails.
+**Cause:** Segment detection (CLIP or SSIM) generates boundary indices that exceed actual frame count. Loop tries to access `frames[stable_segments[i+1][0]]` where index >= len(frames).
+**Status:** Investigating. Added logging to show frame count and all segment boundaries before accessing. Will check if video truncation or segment detection overflow is root cause.

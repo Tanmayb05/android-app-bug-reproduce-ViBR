@@ -517,6 +517,10 @@ def main(
     if stable_segments[0][0] > segmentation_config.get("leading_segment_min_frame", 2):
         stable_segments = [(0, 1)] + stable_segments
 
+    frame_count = len(frames)
+    logger.info(f"Total frames: {frame_count}, total segments: {len(stable_segments)}")
+    logger.info(f"Segment boundaries: {stable_segments}")
+
     # ---- Per-segment replay loop (unchanged) ----
     stats.scenes = len(stable_segments) - 1
     for i in range(len(stable_segments) - 1):
@@ -526,6 +530,10 @@ def main(
 
         start = stable_segments[i][1]
         stop = stable_segments[i + 1][0]
+
+        if start >= frame_count or stop >= frame_count:
+            logger.error(f"Segment {i}: invalid indices start={start} stop={stop} (frame_count={frame_count}). Skipping.")
+            continue
 
         start_img = frames[start]
         stop_img = frames[stop]
