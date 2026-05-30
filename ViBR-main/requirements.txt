@@ -1,7 +1,0 @@
-opencv-python
-openai
-scikit-image
-torch
-torchvision
-supervision
-transformers
