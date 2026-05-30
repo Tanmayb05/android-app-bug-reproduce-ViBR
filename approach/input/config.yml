@@ -1,6 +1,16 @@
 # ViBR Configuration
 # All configurable values for the automation framework
 
+# Available app_name values:
+# adaway ✓, antennapod1 ✗, antennapod2 ✗, antennapod3 ✗,
+# bakerspercentagecalculator1 ✗, bakerspercentagecalculator2 ✗,
+# batterytemperaturedisplay ✗, bily ✗, binaryeye ✗,
+# bloodpressuremonitor1 ✗, bloodpressuremonitor2 ✗, bloodpressuremonitor3 ✗,
+# brethap1 ✗, brethap2 ✗, deadhash ✗,
+# homemedkit1 ✗, homemedkit2 ✗, homeraudioplayer ✗,
+# jigsaw1 ✗, jigsaw2 ✗, luxalarm1 ✗, luxalarm2 ✗,
+# newpipe ✗, pantry ✗, portauthority ✗, quitter ✓, simplenotes ✓,
+# vanilla ✓, wifianalyzer1 ✓, wifianalyzer2 ✓
 run:
   app_name: "quitter"
   quality: "bad"              # "good" | "bad"
