@@ -12,8 +12,8 @@
 # newpipe ✗, pantry ✗, portauthority ✗, quitter ✓, simplenotes ✓,
 # vanilla ✓, wifianalyzer1 ✓, wifianalyzer2 ✓
 run:
-  app_name: "quitter"
-  quality: "bad"              # "good" | "bad"
+  app_name: "antennapod1"
+  quality: "good"              # "good" | "bad"
 
 model:
   provider: "gemini"          # "openai" | "gemini"

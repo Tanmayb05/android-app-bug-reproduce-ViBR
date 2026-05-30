@@ -1,0 +1,21 @@
+{
+  "app_name": "antennapod1",
+  "video_quality": "bad",
+  "provider": "gemini",
+  "model": "gemini-2.5-pro",
+  "algorithm": "clip",
+  "status": "successful",
+  "scenes": 3,
+  "actions_executed": 2,
+  "llm_calls": 15,
+  "llm_total_latency_s": 152.61,
+  "llm_avg_latency_s": 10.17,
+  "tokens_used": 25671,
+  "duration_s": 530.43,
+  "steps_taken": [
+    "Initialized configuration and device controller",
+    "Processing segment 0",
+    "Processing segment 1",
+    "Processing segment 2"
+  ]
+}

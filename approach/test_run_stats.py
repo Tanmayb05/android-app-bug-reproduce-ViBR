@@ -12,7 +12,7 @@ def test_response_token_count_reads_openai_usage():
         usage=SimpleNamespace(prompt_tokens=12, completion_tokens=8, total_tokens=20)
     )
 
-    assert run_stats.response_token_count(response) == 20
+    assert run_stats.response_token_count(response) == (12, 8)
 
 
 def test_response_token_count_reads_gemini_usage_metadata():
@@ -24,7 +24,7 @@ def test_response_token_count_reads_gemini_usage_metadata():
         )
     )
 
-    assert run_stats.response_token_count(response) == 20
+    assert run_stats.response_token_count(response) == (12, 8)
 
 
 def test_response_token_count_sums_when_total_missing():
@@ -36,7 +36,7 @@ def test_response_token_count_sums_when_total_missing():
         )
     )
 
-    assert run_stats.response_token_count(response) == 23
+    assert run_stats.response_token_count(response) == (12, 8)
 
 
 def test_record_llm_response_is_noop_without_active_stats():
@@ -59,11 +59,18 @@ def test_record_llm_response_updates_active_stats():
 
     run_stats.record_llm_response(
         1.5,
-        SimpleNamespace(usage_metadata={"total_token_count": 9}),
+        SimpleNamespace(
+            usage_metadata=SimpleNamespace(
+                prompt_token_count=7,
+                candidates_token_count=2,
+            )
+        ),
     )
 
     assert stats.llm_calls == 1
     assert stats.llm_total_latency_s == 1.5
+    assert stats.input_tokens == 7
+    assert stats.output_tokens == 2
     assert stats.tokens_used == 9
 
 

@@ -8,6 +8,19 @@ from pathlib import Path
 import json
 
 
+# Gemini API pricing per 1M tokens (standard tier, May 2026)
+PRICING = {
+    "gemini-2.5-pro": {
+        "input": 1.25,  # $1.25 per 1M tokens (prompts <= 200k)
+        "output": 10.00,  # $10.00 per 1M tokens (prompts <= 200k)
+    },
+    "gemini-2.5-flash": {
+        "input": 0.30,  # $0.30 per 1M tokens
+        "output": 2.50,  # $2.50 per 1M tokens
+    },
+}
+
+
 @dataclass
 class RunStats:
     """Aggregates run metrics."""
@@ -24,7 +37,8 @@ class RunStats:
     actions_executed: int = 0
     llm_calls: int = 0
     llm_total_latency_s: float = 0.0
-    tokens_used: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
     start_time: float = field(default_factory=time.time)
     end_time: float | None = None
     config_used: dict | None = None
@@ -41,15 +55,48 @@ class RunStats:
             return 0.0
         return self.llm_total_latency_s / self.llm_calls
 
+    @property
+    def tokens_used(self) -> int:
+        return self.input_tokens + self.output_tokens
+
+    @property
+    def cost_usd(self) -> float:
+        """Calculate total cost in USD based on model pricing."""
+        if self.model not in PRICING:
+            return 0.0
+        pricing = PRICING[self.model]
+        input_cost = (self.input_tokens / 1_000_000) * pricing["input"]
+        output_cost = (self.output_tokens / 1_000_000) * pricing["output"]
+        return input_cost + output_cost
+
+    @property
+    def input_cost_usd(self) -> float:
+        """Calculate input token cost in USD."""
+        if self.model not in PRICING:
+            return 0.0
+        pricing = PRICING[self.model]
+        return (self.input_tokens / 1_000_000) * pricing["input"]
+
+    @property
+    def output_cost_usd(self) -> float:
+        """Calculate output token cost in USD."""
+        if self.model not in PRICING:
+            return 0.0
+        pricing = PRICING[self.model]
+        return (self.output_tokens / 1_000_000) * pricing["output"]
+
     def add_step(self, description: str) -> None:
         """Log a step taken during run."""
         self.steps_taken.append(description)
 
-    def record_llm_call(self, latency_s: float, tokens: int) -> None:
-        """Record an LLM API call."""
+    def record_llm_call(
+        self, latency_s: float, input_tokens: int, output_tokens: int
+    ) -> None:
+        """Record an LLM API call with token breakdown."""
         self.llm_calls += 1
         self.llm_total_latency_s += latency_s
-        self.tokens_used += tokens
+        self.input_tokens += input_tokens
+        self.output_tokens += output_tokens
 
     def finalize(self) -> None:
         """Mark end time."""
@@ -69,7 +116,12 @@ class RunStats:
             "llm_calls": self.llm_calls,
             "llm_total_latency_s": round(self.llm_total_latency_s, 2),
             "llm_avg_latency_s": round(self.avg_llm_latency_s, 2),
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
             "tokens_used": self.tokens_used,
+            "input_cost_usd": round(self.input_cost_usd, 4),
+            "output_cost_usd": round(self.output_cost_usd, 4),
+            "cost_usd": round(self.cost_usd, 4),
             "duration_s": round(self.duration_s, 2),
             "steps_taken": self.steps_taken,
         }
@@ -118,35 +170,41 @@ def _read_usage_value(usage: Any, key: str) -> int:
     return value if isinstance(value, int) else 0
 
 
-def response_token_count(response: Any) -> int:
-    """Best-effort token extraction for supported LLM SDK response objects."""
+def response_token_count(response: Any) -> tuple[int, int]:
+    """Extract input and output tokens from LLM response (input, output)."""
     usage = getattr(response, "usage", None) or getattr(
         response, "usage_metadata", None
     )
+
+    # Try input tokens
+    input_tokens = (
+        _read_usage_value(usage, "prompt_tokens")
+        or _read_usage_value(usage, "prompt_token_count")
+    )
+
+    # Try output tokens
+    output_tokens = (
+        _read_usage_value(usage, "completion_tokens")
+        or _read_usage_value(usage, "candidates_token_count")
+    )
+
+    # Fallback: if only total available, assume 80% input, 20% output (rough estimate)
     total = _read_usage_value(usage, "total_tokens") or _read_usage_value(
         usage, "total_token_count"
     )
-    if total:
-        return total
+    if total and not (input_tokens or output_tokens):
+        input_tokens = int(total * 0.8)
+        output_tokens = int(total * 0.2)
 
-    return sum(
-        _read_usage_value(usage, key)
-        for key in (
-            "prompt_tokens",
-            "completion_tokens",
-            "prompt_token_count",
-            "candidates_token_count",
-            "thoughts_token_count",
-            "cached_content_token_count",
-        )
-    )
+    return input_tokens, output_tokens
 
 
 def record_llm_response(latency_s: float, response: Any) -> None:
     """Record an LLM response if a run stats tracker is active."""
     if _current_stats is None:
         return
-    _current_stats.record_llm_call(latency_s, response_token_count(response))
+    input_tokens, output_tokens = response_token_count(response)
+    _current_stats.record_llm_call(latency_s, input_tokens, output_tokens)
 
 
 def log_run_summary(app_dir: Path) -> None:
@@ -171,7 +229,14 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info(f"LLM calls: {_current_stats.llm_calls}")
     logger.info(f"LLM total latency: {_current_stats.llm_total_latency_s:.2f}s")
     logger.info(f"LLM avg latency: {_current_stats.avg_llm_latency_s:.2f}s")
+    logger.info(f"Input tokens: {_current_stats.input_tokens}")
+    logger.info(f"Output tokens: {_current_stats.output_tokens}")
     logger.info(f"Tokens used: {_current_stats.tokens_used}")
+    cost_breakdown = ""
+    if _current_stats.model in PRICING:
+        pricing = PRICING[_current_stats.model]
+        cost_breakdown = f" (input: ${_current_stats.input_cost_usd:.4f} @ ${pricing['input']}/M, output: ${_current_stats.output_cost_usd:.4f} @ ${pricing['output']}/M)"
+    logger.info(f"Cost: ${_current_stats.cost_usd:.4f}{cost_breakdown}")
     logger.info(f"Total duration: {_current_stats.duration_s:.2f}s")
     logger.info("=" * 80)
 

@@ -486,6 +486,9 @@ def main(
     # Output dir: apps/<app_name>-<provider_model>/<quality>-artifacts/
     artifacts_dir = app_dir / f"{quality}-artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
+    # Cache dir: apps/<app_name>-<provider_model>/<quality>-cache/
+    cache_dir = app_dir / f"{quality}-cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
 
     frames, y_frames = yyh_utils.read_frames_from_video(
         video_path, header_pixel_size=replay_config.get("header_crop_px", 33)
@@ -499,7 +502,7 @@ def main(
             frames,
             y_frames,
             video_stem,
-            cache_folder=segmentation_config.get("cache_dir", "./cache"),
+            cache_folder=str(cache_dir),
             stable_sim_threshold=ssim_config.get("stable_sim_threshold", 0.95),
             stable_interval_threshold=ssim_config.get("stable_interval_threshold", 3),
         )
@@ -508,7 +511,7 @@ def main(
         stable_segments = segment_with_clip(
             frames,
             video_stem,
-            cache_folder=segmentation_config.get("cache_dir", "./cache"),
+            cache_folder=str(cache_dir),
             stable_sim_threshold=clip_config.get("stable_sim_threshold", 0.95),
             stable_interval_threshold=clip_config.get("stable_interval_threshold", 3),
             model_name=clip_config.get("model", "openai/clip-vit-base-patch32"),
