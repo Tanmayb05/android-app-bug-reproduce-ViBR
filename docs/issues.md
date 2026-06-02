@@ -238,3 +238,29 @@ IndexError: list index out of range
 Segment 3 completes successfully, segment 4 fails.
 **Cause:** Segment detection (CLIP or SSIM) generates boundary indices that exceed actual frame count. Loop tries to access `frames[stable_segments[i+1][0]]` where index >= len(frames).
 **Status:** Investigating. Added logging to show frame count and all segment boundaries before accessing. Will check if video truncation or segment detection overflow is root cause.
+
+---
+
+## 2026-05-30 17:00 — app: antennapod1-gemini-2.5-pro | quality: bad | algo: clip | provider: gemini
+
+### OBSERVATION — CLIP segment detection too coarse, only 4 segments detected for 2025-frame video
+
+**File:** `approach/config_loader.py` (segmentation config)
+**Symptom:** Bad video (34.2 sec, 2025 frames) detected only 4 stable segments. Segment boundaries: `[(0, 73), (81, 363), (371, 401), (409, 1329)]`. Few state transitions captured compared to good video (13 segments, richer action sequence).
+**Root Cause:** CLIP similarity threshold set conservatively at `stable_sim_threshold: 0.95` with `stable_interval_threshold: 3`. Requires frames to be **visually identical** across 3-frame window, then drop similarity below 0.95. Misses finer UI changes (button press feedback, dialog animations, screen transitions).
+**Visual Inspection:** Extracted boundary frames confirmed detection is *correct but coarse*. Segments 0→1→2→3 properly mark major state changes (Play Store → app opening → loading complete → app home). But intermediate UI states (scrolls, animations, small modal changes) collapsed into single segments.
+
+**Resolution:** Lowered thresholds to capture more granular state changes:
+
+```yaml
+# Before:
+stable_sim_threshold: 0.95
+stable_interval_threshold: 3
+
+# After:
+stable_sim_threshold: 0.90
+stable_interval_threshold: 1
+```
+
+**Result:** Allows detection of smaller visual deltas and single-frame transitions. More segments generated = more replay actions = better coverage of user interactions.
+**Note:** Trade-off: Lower thresholds may increase false positives (noise mistaken for state change). Monitor next runs for segment accuracy.

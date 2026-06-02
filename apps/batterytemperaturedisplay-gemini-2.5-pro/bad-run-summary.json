@@ -1,0 +1,25 @@
+{
+  "app_name": "batterytemperaturedisplay",
+  "video_quality": "bad",
+  "provider": "gemini",
+  "model": "gemini-2.5-pro",
+  "algorithm": "clip",
+  "status": "successful",
+  "scenes": 2,
+  "actions_executed": 2,
+  "llm_calls": 9,
+  "llm_total_latency_s": 98.64,
+  "llm_avg_latency_s": 10.96,
+  "input_tokens": 7888,
+  "output_tokens": 393,
+  "tokens_used": 8281,
+  "input_cost_usd": 0.0099,
+  "output_cost_usd": 0.0039,
+  "cost_usd": 0.0138,
+  "duration_s": 188.53,
+  "steps_taken": [
+    "Initialized configuration and device controller",
+    "Processing segment 0",
+    "Processing segment 1"
+  ]
+}

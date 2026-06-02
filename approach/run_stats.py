@@ -8,6 +8,13 @@ from pathlib import Path
 import json
 
 
+def _format_duration(seconds: float) -> str:
+    """Format duration in seconds as 'XXs (Xm Ys)' format."""
+    mins = int(seconds) // 60
+    secs = int(seconds) % 60
+    return f"{seconds:.2f}s ({mins}m {secs}s)"
+
+
 # Gemini API pricing per 1M tokens (standard tier, May 2026)
 PRICING = {
     "gemini-2.5-pro": {
@@ -227,8 +234,8 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info(f"Scenes: {_current_stats.scenes}")
     logger.info(f"Actions executed: {_current_stats.actions_executed}")
     logger.info(f"LLM calls: {_current_stats.llm_calls}")
-    logger.info(f"LLM total latency: {_current_stats.llm_total_latency_s:.2f}s")
-    logger.info(f"LLM avg latency: {_current_stats.avg_llm_latency_s:.2f}s")
+    logger.info(f"LLM total latency: {_format_duration(_current_stats.llm_total_latency_s)}")
+    logger.info(f"LLM avg latency: {_format_duration(_current_stats.avg_llm_latency_s)}")
     logger.info(f"Input tokens: {_current_stats.input_tokens}")
     logger.info(f"Output tokens: {_current_stats.output_tokens}")
     logger.info(f"Tokens used: {_current_stats.tokens_used}")
@@ -237,7 +244,7 @@ def log_run_summary(app_dir: Path) -> None:
         pricing = PRICING[_current_stats.model]
         cost_breakdown = f" (input: ${_current_stats.input_cost_usd:.4f} @ ${pricing['input']}/M, output: ${_current_stats.output_cost_usd:.4f} @ ${pricing['output']}/M)"
     logger.info(f"Cost: ${_current_stats.cost_usd:.4f}{cost_breakdown}")
-    logger.info(f"Total duration: {_current_stats.duration_s:.2f}s")
+    logger.info(f"Total duration: {_format_duration(_current_stats.duration_s)}")
     logger.info("=" * 80)
 
     # Also write JSON summary to apps/<app_name>-<provider_model>/<quality>-run-summary.json

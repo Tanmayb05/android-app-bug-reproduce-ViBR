@@ -2,8 +2,8 @@
 # All configurable values for the automation framework
 
 # Available app_name values:
-# adaway ✓, antennapod1 ✗, antennapod2 ✗, antennapod3 ✗,
-# bakerspercentagecalculator1 ✗, bakerspercentagecalculator2 ✗,
+# adaway ✓, antennapod1 ✓, antennapod2 ✓, antennapod3 ✗,
+# bakerspercentagecalculator1 ✓, bakerspercentagecalculator2 ✓,
 # batterytemperaturedisplay ✗, bily ✗, binaryeye ✗,
 # bloodpressuremonitor1 ✗, bloodpressuremonitor2 ✗, bloodpressuremonitor3 ✗,
 # brethap1 ✗, brethap2 ✗, deadhash ✗,
@@ -12,7 +12,7 @@
 # newpipe ✗, pantry ✗, portauthority ✗, quitter ✓, simplenotes ✓,
 # vanilla ✓, wifianalyzer1 ✓, wifianalyzer2 ✓
 run:
-  app_name: "antennapod1"
+  app_name: "batterytemperaturedisplay"
   quality: "good"              # "good" | "bad"
 
 model:
@@ -27,11 +27,11 @@ segmentation:
   algorithm: "clip"           # "ssim" | "clip"
   ssim:
     stable_sim_threshold: 0.95
-    stable_interval_threshold: 3
+    stable_interval_threshold: 2
   clip:
     model: "openai/clip-vit-base-patch32"
     stable_sim_threshold: 0.95
-    stable_interval_threshold: 3
+    stable_interval_threshold: 1
     frame_step: 1
   cache_dir: "./cache"
   leading_segment_min_frame: 2

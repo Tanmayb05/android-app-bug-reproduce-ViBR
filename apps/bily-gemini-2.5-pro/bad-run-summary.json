@@ -1,0 +1,23 @@
+{
+  "app_name": "bily",
+  "video_quality": "bad",
+  "provider": "gemini",
+  "model": "gemini-2.5-pro",
+  "algorithm": "ssim",
+  "status": "incomplete",
+  "scenes": 0,
+  "actions_executed": 0,
+  "llm_calls": 1,
+  "llm_total_latency_s": 2.57,
+  "llm_avg_latency_s": 2.57,
+  "input_tokens": 5,
+  "output_tokens": 1,
+  "tokens_used": 6,
+  "input_cost_usd": 0.0,
+  "output_cost_usd": 0.0,
+  "cost_usd": 0.0,
+  "duration_s": 42.22,
+  "steps_taken": [
+    "Initialized configuration and device controller"
+  ]
+}

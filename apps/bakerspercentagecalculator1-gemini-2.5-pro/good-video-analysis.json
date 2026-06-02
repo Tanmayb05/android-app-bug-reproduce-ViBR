@@ -1,0 +1,198 @@
+{
+  "video_summary": {
+    "app_name": "Baker's Percentage Calculator",
+    "overall_goal": "Create and save a new recipe entry.",
+    "device_type": "Android",
+    "description": "The recording starts on an empty recipe list, opens the add-recipe form, enters a recipe named cake with notes and an oven temperature, then saves it so it appears in the recipe list."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "00:00",
+      "timestamp_end": "00:03.5",
+      "screen_name": "Recipe list",
+      "what_screen_is_visible": "The main screen for Baker's Percentage Calculator is visible with an empty-state message telling the user to press the plus button to add the first recipe.",
+      "visible_ui_elements": [
+        "Baker's Percentage Calculator title",
+        "overflow menu icon",
+        "empty-state message",
+        "plus floating action button"
+      ],
+      "user_gesture": "tap",
+      "target_element": "plus floating action button",
+      "system_response": "The app opens a recipe entry form.",
+      "navigation_change": "screen_transition to add-recipe form",
+      "data_entered": "",
+      "visual_feedback": "The plus button is highlighted before the form appears.",
+      "intent_task": "Start adding a new recipe.",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "00:03.5",
+      "timestamp_end": "00:06.5",
+      "screen_name": "Add recipe form",
+      "what_screen_is_visible": "A recipe form is visible with fields for Recipe Name, Unit, Ingredients, Notes, Oven Temp & Time, and a Save Recipe button.",
+      "visible_ui_elements": [
+        "Recipe Name field",
+        "Unit dropdown set to grams",
+        "Ingredients section",
+        "Ingredient Name field with Flour",
+        "percentage field with 100.0",
+        "remove ingredient icon",
+        "add ingredient button",
+        "Notes field",
+        "Oven Temp & Time field",
+        "Save Recipe button"
+      ],
+      "user_gesture": "type_text",
+      "target_element": "Recipe Name field",
+      "system_response": "The Recipe Name field is filled with cake.",
+      "navigation_change": "none",
+      "data_entered": "cake",
+      "visual_feedback": "The text cursor appears in the Recipe Name field and keypress popups appear while typing.",
+      "intent_task": "Name the new recipe.",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "00:06.5",
+      "timestamp_end": "00:08",
+      "screen_name": "Add recipe form",
+      "what_screen_is_visible": "The add-recipe form remains visible with cake entered as the recipe name and Flour still listed as the default ingredient.",
+      "visible_ui_elements": [
+        "Recipe Name field with cake",
+        "Unit dropdown set to grams",
+        "Ingredient Name field with Flour",
+        "percentage field with 100.0",
+        "Notes field",
+        "Oven Temp & Time field",
+        "Save Recipe button"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Ingredient Name field",
+      "system_response": "The Ingredient Name field receives focus, but its visible value remains Flour.",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "A text cursor and selection handle appear in the Ingredient Name field.",
+      "intent_task": "Review or prepare to edit the ingredient field.",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "00:08",
+      "timestamp_end": "00:10",
+      "screen_name": "Add recipe form",
+      "what_screen_is_visible": "The add-recipe form is visible and the Notes field is active.",
+      "visible_ui_elements": [
+        "Recipe Name field with cake",
+        "Unit dropdown set to grams",
+        "Ingredient Name field with Flour",
+        "percentage field with 100.0",
+        "Notes field",
+        "Oven Temp & Time field",
+        "Save Recipe button"
+      ],
+      "user_gesture": "type_text",
+      "target_element": "Notes field",
+      "system_response": "The Notes field is filled with nuts.",
+      "navigation_change": "none",
+      "data_entered": "nuts",
+      "visual_feedback": "The Notes field is outlined and keypress popups appear while typing.",
+      "intent_task": "Add notes for the recipe.",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "00:10.5",
+      "timestamp_end": "00:15.5",
+      "screen_name": "Add recipe form",
+      "what_screen_is_visible": "The add-recipe form remains visible with cake in the recipe name and nuts in the notes field. The Oven Temp & Time field is active.",
+      "visible_ui_elements": [
+        "Recipe Name field with cake",
+        "Unit dropdown set to grams",
+        "Ingredient Name field with Flour",
+        "percentage field with 100.0",
+        "Notes field with nuts",
+        "Oven Temp & Time field",
+        "Save Recipe button"
+      ],
+      "user_gesture": "type_text",
+      "target_element": "Oven Temp & Time field",
+      "system_response": "The Oven Temp & Time field is filled with 400.",
+      "navigation_change": "none",
+      "data_entered": "400",
+      "visual_feedback": "The Oven Temp & Time field is outlined and numeric keypress popups appear while typing.",
+      "intent_task": "Enter oven temperature or timing information for the recipe.",
+      "confidence": "high"
+    },
+    {
+      "step_number": 6,
+      "timestamp_start": "00:16",
+      "timestamp_end": "00:17",
+      "screen_name": "Add recipe form",
+      "what_screen_is_visible": "The completed recipe form is visible with cake, Flour, 100.0, nuts, and 400 entered.",
+      "visible_ui_elements": [
+        "Recipe Name field with cake",
+        "Unit dropdown set to grams",
+        "Ingredient Name field with Flour",
+        "percentage field with 100.0",
+        "Notes field with nuts",
+        "Oven Temp & Time field with 400",
+        "Save Recipe button"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Save Recipe button",
+      "system_response": "The recipe is saved and the app returns to the recipe list.",
+      "navigation_change": "screen_transition to recipe list",
+      "data_entered": "",
+      "visual_feedback": "The Save Recipe button shows a pressed state before the list appears.",
+      "intent_task": "Save the completed recipe.",
+      "confidence": "high"
+    },
+    {
+      "step_number": 7,
+      "timestamp_start": "00:17",
+      "timestamp_end": "00:19.25",
+      "screen_name": "Recipe list",
+      "what_screen_is_visible": "The recipe list is visible with one row for cake and action icons on the right.",
+      "visible_ui_elements": [
+        "Baker's Percentage Calculator title",
+        "overflow menu icon",
+        "recipe row labeled cake",
+        "share icon",
+        "delete icon",
+        "plus floating action button"
+      ],
+      "user_gesture": "wait",
+      "target_element": "",
+      "system_response": "The saved cake recipe remains visible in the list.",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "The saved recipe row is displayed.",
+      "intent_task": "Confirm that the recipe was saved.",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "type_text",
+    "wait",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "Open the add-recipe form from the empty recipe list.",
+    "Enter recipe details into the form.",
+    "Save the recipe.",
+    "Return to the recipe list and view the saved recipe."
+  ],
+  "human_readable_step_summary": [
+    "Step 1: The app starts on an empty recipe list and the user taps the plus button to add a recipe.",
+    "Step 2: The user types cake into the recipe name field.",
+    "Step 3: The user focuses the ingredient field, which still shows Flour.",
+    "Step 4: The user types nuts into the notes field.",
+    "Step 5: The user types 400 into the oven temperature and time field.",
+    "Step 6: The user taps Save Recipe to save the completed recipe.",
+    "Step 7: The app shows the saved cake recipe in the recipe list."
+  ]
+}

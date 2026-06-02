@@ -33,6 +33,14 @@ def read_frames_from_video(video, header_pixel_size):
     y_frames = []
     vidcap = cv2.VideoCapture(video)
     success, frame = vidcap.read()
+    if not success:
+        print(f"[WARN] Failed to read first frame from {video}")
+        vidcap.release()
+        return frames, y_frames
+    if frame is None:
+        print(f"[WARN] First frame is None from {video}")
+        vidcap.release()
+        return frames, y_frames
     frames.append(frame)
     y_frame = extract_Y(frame)
     # cut header (remove top 'header_pixel_size' pixels)
@@ -46,6 +54,7 @@ def read_frames_from_video(video, header_pixel_size):
         y_frames.append(y_frame[header_pixel_size:])
         print("Reading frame: ", len(frames), end="\r")
     vidcap.release()
+    print(f"\n[INFO] Loaded {len(frames)} total frames from {video}")
     return frames, y_frames
 
 

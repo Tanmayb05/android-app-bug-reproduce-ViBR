@@ -1,0 +1,32 @@
+{
+  "app_name": "binaryeye",
+  "video_quality": "good",
+  "provider": "gemini",
+  "model": "gemini-2.5-pro",
+  "algorithm": "clip",
+  "status": "successful",
+  "scenes": 9,
+  "actions_executed": 1,
+  "llm_calls": 68,
+  "llm_total_latency_s": 693.2,
+  "llm_avg_latency_s": 10.19,
+  "input_tokens": 65983,
+  "output_tokens": 4161,
+  "tokens_used": 70144,
+  "input_cost_usd": 0.0825,
+  "output_cost_usd": 0.0416,
+  "cost_usd": 0.1241,
+  "duration_s": 871.06,
+  "steps_taken": [
+    "Initialized configuration and device controller",
+    "Processing segment 0",
+    "Processing segment 1",
+    "Processing segment 2",
+    "Processing segment 3",
+    "Processing segment 4",
+    "Processing segment 5",
+    "Processing segment 6",
+    "Processing segment 7",
+    "Processing segment 8"
+  ]
+}

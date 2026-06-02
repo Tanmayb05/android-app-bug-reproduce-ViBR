@@ -1,0 +1,177 @@
+{
+  "video_summary": {
+    "app_name": "Battery Temperature",
+    "overall_goal": "Open the battery temperature app and attempt to start temperature logging with an edited log duration.",
+    "device_type": "Android",
+    "description": "The recording starts from an app store page and opens the Battery Temperature app. The user edits the Log for duration field to 3 minutes, taps near the Start Logging button while the keyboard is visible, then later opens the app switcher and returns toward the app store page."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "00:00",
+      "timestamp_end": "00:01",
+      "screen_name": "App store listing",
+      "what_screen_is_visible": "An app store listing for a battery temperature app is visible with an Open button and preview images.",
+      "visible_ui_elements": [
+        "app listing header",
+        "Open button",
+        "app preview images",
+        "app description text",
+        "back arrow",
+        "overflow menu icon"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Open button",
+      "system_response": "The app store page transitions to the Battery Temperature app.",
+      "navigation_change": "screen_transition to Battery Temperature app",
+      "data_entered": "",
+      "visual_feedback": "The phone briefly shows a dark transition screen before the app appears.",
+      "intent_task": "Launch the installed battery temperature app.",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "00:01",
+      "timestamp_end": "00:03",
+      "screen_name": "Battery Temperature main screen",
+      "what_screen_is_visible": "The Battery Temperature main screen is visible with the current temperature, a graph, logging controls, alarm controls, and app options.",
+      "visible_ui_elements": [
+        "Battery Temperature title",
+        "temperature reading around 18.5 °C",
+        "temperature graph",
+        "Log for field",
+        "minutes selector",
+        "START LOGGING button",
+        "log file path",
+        "Ring alarm at field",
+        "Enable temperature alarm checkbox",
+        "Enable Auto Start checkbox",
+        "KILL APP and EXIT control",
+        "notification icon text color options"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Log for field",
+      "system_response": "The Log for field gains focus and the numeric keyboard opens.",
+      "navigation_change": "open_keyboard",
+      "data_entered": "",
+      "visual_feedback": "A cursor appears in the Log for field and the numeric keyboard slides up from the bottom.",
+      "intent_task": "Edit how long the app should log battery temperature.",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "00:03",
+      "timestamp_end": "00:08.5",
+      "screen_name": "Battery Temperature main screen",
+      "what_screen_is_visible": "The main screen remains visible with the numeric keyboard open and the Log for field active.",
+      "visible_ui_elements": [
+        "Battery Temperature title",
+        "temperature reading around 18.5 °C",
+        "temperature graph",
+        "Log for field",
+        "minutes selector",
+        "START LOGGING button",
+        "numeric keyboard"
+      ],
+      "user_gesture": "type_text",
+      "target_element": "Log for field",
+      "system_response": "The Log for value changes to 3.",
+      "navigation_change": "none",
+      "data_entered": "3",
+      "visual_feedback": "The Log for field displays 3 while the numeric keyboard stays open.",
+      "intent_task": "Set the logging duration to 3 minutes.",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "00:08.5",
+      "timestamp_end": "00:13.5",
+      "screen_name": "Battery Temperature main screen",
+      "what_screen_is_visible": "The Battery Temperature screen remains open with Log for set to 3 minutes and the START LOGGING button visible above the keyboard.",
+      "visible_ui_elements": [
+        "Log for 3 minutes",
+        "START LOGGING button",
+        "log file path",
+        "Ring alarm at field",
+        "Enable temperature alarm checkbox",
+        "numeric keyboard"
+      ],
+      "user_gesture": "tap",
+      "target_element": "START LOGGING button",
+      "system_response": "No clear app state change is visible while the keyboard remains open.",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "The user's finger taps near the START LOGGING button, but no clear logging indicator or confirmation appears.",
+      "intent_task": "Attempt to start temperature logging.",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "00:13.5",
+      "timestamp_end": "00:15.5",
+      "screen_name": "Battery Temperature main screen",
+      "what_screen_is_visible": "The keyboard disappears and the lower part of the Battery Temperature screen is visible, including app controls and notification color options.",
+      "visible_ui_elements": [
+        "Battery Temperature title",
+        "temperature reading around 19.0 °C",
+        "Log for 3 minutes",
+        "START LOGGING button",
+        "Enable Auto Start checkbox",
+        "KILL APP and EXIT control",
+        "Black radio option",
+        "White radio option"
+      ],
+      "user_gesture": "close_keyboard",
+      "target_element": "numeric keyboard",
+      "system_response": "The numeric keyboard closes and more lower-screen settings become visible.",
+      "navigation_change": "close_keyboard",
+      "data_entered": "",
+      "visual_feedback": "The keyboard is no longer visible.",
+      "intent_task": "Dismiss the keyboard after editing the logging duration.",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 6,
+      "timestamp_start": "00:15.5",
+      "timestamp_end": "00:17.28",
+      "screen_name": "Recent apps",
+      "what_screen_is_visible": "The Android recent-apps overview appears with the Battery Temperature app and an app store card visible.",
+      "visible_ui_elements": [
+        "Battery Temperature app card",
+        "app store card",
+        "recent apps carousel"
+      ],
+      "user_gesture": "tap",
+      "target_element": "app store card",
+      "system_response": "The visible app changes back toward the app store listing.",
+      "navigation_change": "screen_transition to app store listing",
+      "data_entered": "",
+      "visual_feedback": "The recent-apps carousel slides and the app store page becomes visible again.",
+      "intent_task": "Leave the Battery Temperature app and return to the previous app store screen.",
+      "confidence": "medium"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "type_text",
+    "open_keyboard",
+    "close_keyboard",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "Open the Battery Temperature app from an app store listing.",
+    "Focus the logging duration input.",
+    "Enter 3 as the Log for duration.",
+    "Tap near START LOGGING while the keyboard remains open.",
+    "Dismiss the keyboard.",
+    "Open recent apps and return toward the app store listing."
+  ],
+  "human_readable_step_summary": [
+    "Step 1: The user opens the Battery Temperature app from an app store page.",
+    "Step 2: The app shows the battery temperature screen and the user taps the Log for field.",
+    "Step 3: The user enters 3 as the logging duration.",
+    "Step 4: The user taps near START LOGGING, but no clear confirmation appears.",
+    "Step 5: The keyboard closes and the lower settings become visible.",
+    "Step 6: The user opens recent apps and returns toward the app store page."
+  ]
+}

@@ -522,17 +522,30 @@ def main(
 
     frame_count = len(frames)
     logger.info(f"Total frames: {frame_count}, total segments: {len(stable_segments)}")
-    logger.info(f"Segment boundaries: {stable_segments}")
+    logger.info(f"Raw segment boundaries (before clamping): {stable_segments}")
+
+    clamped_segments = []
+    for i, (start, stop) in enumerate(stable_segments):
+        clamped_start = min(max(start, 0), frame_count - 1)
+        clamped_stop = min(max(stop, 0), frame_count - 1)
+        if (start, stop) != (clamped_start, clamped_stop):
+            logger.warning(f"  Segment {i}: ({start}, {stop}) -> ({clamped_start}, {clamped_stop}) [clamped]")
+        else:
+            logger.debug(f"  Segment {i}: ({start}, {stop}) [ok]")
+        clamped_segments.append((clamped_start, clamped_stop))
+    stable_segments = clamped_segments
+    logger.info(f"Clamped segment boundaries: {stable_segments}")
 
     # ---- Per-segment replay loop (unchanged) ----
     stats.scenes = len(stable_segments) - 1
     for i in range(len(stable_segments) - 1):
         time.sleep(replay_config.get("inter_segment_sleep", 0.5))
-        logger.info(f"Processing segment {i}...")
+        logger.info(f"Processing segment {i}/{len(stable_segments) - 2}...")
         stats.add_step(f"Processing segment {i}")
 
         start = stable_segments[i][1]
         stop = stable_segments[i + 1][0]
+        logger.debug(f"  Segment {i}: boundary frames start={start} (end of seg {i}), stop={stop} (start of seg {i+1})")
 
         if start >= frame_count or stop >= frame_count:
             logger.error(f"Segment {i}: invalid indices start={start} stop={stop} (frame_count={frame_count}). Skipping.")
@@ -540,6 +553,7 @@ def main(
 
         start_img = frames[start]
         stop_img = frames[stop]
+        logger.debug(f"  Segment {i}: loaded frames successfully (start_img shape={start_img.shape if start_img is not None else 'None'}, stop_img shape={stop_img.shape if stop_img is not None else 'None'})")
         live_path = device.screenshot(
             index=0,
             save_path=str(artifacts_dir),

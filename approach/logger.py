@@ -47,6 +47,13 @@ def setup_logger(
     console_handler = logging.StreamHandler()
     console_handler.setLevel(getattr(logging, str(console_level).upper()))
 
+    # Filter to exclude verbose third-party logs from console
+    class ThirdPartyFilter(logging.Filter):
+        def filter(self, record):
+            return record.name not in {"httpx", "httpcore"}
+
+    console_handler.addFilter(ThirdPartyFilter())
+
     # Format
     formatter = logging.Formatter(
         logging_config.get(
@@ -62,6 +69,10 @@ def setup_logger(
     root_logger.addHandler(file_handler)
     root_logger.addHandler(debug_handler)
     root_logger.addHandler(console_handler)
+
+    # Suppress verbose external logs
+    logging.getLogger("httpx").setLevel(logging.DEBUG)
+    logging.getLogger("transformers").setLevel(logging.WARNING)
 
     # Log config at start if provided
     if config:
