@@ -37,6 +37,9 @@ dist/
 .vscode/
 .cursor/
 .claude/
+# But track skills and CLAUDE.md
+!.claude/skills/
+!.claude/CLAUDE.md
 # Local code-review graph cache/database; generated and can grow quickly.
 .code-review-graph/
 .mcp.json
