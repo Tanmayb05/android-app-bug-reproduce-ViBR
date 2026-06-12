@@ -1,0 +1,28 @@
+{
+  "app_name": "bloodpressuremonitor1",
+  "video_quality": "good",
+  "provider": "gemini",
+  "model": "gemini-2.5-pro",
+  "algorithm": "clip",
+  "status": "successful",
+  "scenes": 5,
+  "actions_executed": 3,
+  "llm_calls": 28,
+  "llm_total_latency_s": 322.27,
+  "llm_avg_latency_s": 11.51,
+  "input_tokens": 26562,
+  "output_tokens": 1761,
+  "tokens_used": 28323,
+  "input_cost_usd": 0.0332,
+  "output_cost_usd": 0.0176,
+  "cost_usd": 0.0508,
+  "duration_s": 426.22,
+  "steps_taken": [
+    "Initialized configuration and device controller",
+    "Processing segment 0",
+    "Processing segment 1",
+    "Processing segment 2",
+    "Processing segment 3",
+    "Processing segment 4"
+  ]
+}

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+PROJECT="/Users/tanmaybhuskute/Documents/android-app-bug-reproduce-ViBR"
+
+# Open project folder in VS Code
+code "$PROJECT"
+
+echo ""
+echo "========================================="
+echo "VS Code opened with project folder"
+echo "========================================="
+echo ""
+echo "Next steps:"
+echo "1. Wait 3 seconds for terminal to auto-activate venv"
+echo "2. Run: Cmd+Shift+P"
+echo "3. Type: Tasks: Run Task"
+echo "4. Select: start"
+echo ""
+echo "This will:"
+echo "  - Terminal 1: Start emulator (adb start-server && emulator -avd Pixel_2)"
+echo "  - Terminal 2: Wait 15s then run ViBR (python approach/segment_replay.py)"
+echo ""
+echo "========================================="

@@ -19,6 +19,7 @@ PROMPT = """
       You must also predict the type of user action that caused the change. Choose only from:
       ["tap", "double_tap", "long_press", "swipe", "input_text", "back", "home", "wait", "no action"]
 
-      Respond strictly in this JSON format. If no regions are relevant, return an empty list:
+      RESPOND ONLY WITH JSON. NO EXPLANATION. NO REASONING. ONLY THIS FORMAT:
       { "target_regions": [int, int, ...], "predicted_action": "<action>" }
+      If no regions are relevant, use an empty list.
       """

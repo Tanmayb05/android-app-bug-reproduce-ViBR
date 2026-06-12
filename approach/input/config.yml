@@ -12,7 +12,7 @@
 # newpipe ✗, pantry ✗, portauthority ✗, quitter ✓, simplenotes ✓,
 # vanilla ✓, wifianalyzer1 ✓, wifianalyzer2 ✓
 run:
-  app_name: "batterytemperaturedisplay"
+  app_name: "homemedkit1"
   quality: "good"              # "good" | "bad"
 
 model:

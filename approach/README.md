@@ -91,19 +91,45 @@ ViBR was tested exclusively using the Emulator. While in principle the system sh
 
 
 
-### Execution of ViBR
-1. Make sure you have a running Device (Emulator or Physical)
-2. Prepare an OpenAI API key which you have to add in `openai_api.py`
-3. Install the APP to be tested on the Device
-4. Navigate to the same starting state
-5. Run the script in [`segment_replay.py`](./segment_replay.py) e.g. `python .\segment_replay.py <path to video>
-6. The script will also show the start and goal state additionally to a live screenshot of the device to be able to understand what its trying to execute. 
 
+
+### Starting ADB and Emulator
+
+**Terminal 1 — Start ADB server and launch emulator:**
+```bash
+adb start-server && emulator -avd Pixel_2
 ```
 
-# video path
-path_to_video = "AmazeFileManager-1558/video-#1558.mp4"
+This will:
+- Start the ADB server
+- Launch the Pixel_2 emulator AVD
+- Device will be ready when you see the Android home screen
 
-python segment_replay.py <path_to_video>
+**Terminal 2 — Run ViBR once device is ready:**
+
+```bash
+python approach/segment_replay.py <app_name> <good|bad> [--algo ssim|clip]
+```
+
+Example:
+
+```bash
+python approach/segment_replay.py BatteryTemperatureDisplay good
+```
+
+### Execution of ViBR
+
+1. Start ADB server and emulator in one terminal (see above)
+2. Wait for device to fully boot (Android home screen visible)
+3. Prepare an OpenAI API key in `openai_api.py`
+4. Install the app to be tested on the device
+5. Navigate to the same starting state as the reference video
+6. Run the script in [`segment_replay.py`](./segment_replay.py) in a second terminal
+7. The script displays start/goal states and live device screenshots to show execution progress
+
+Example:
+
+```bash
+python approach/segment_replay.py BatteryTemperatureDisplay good --algo ssim
 ```
 
