@@ -1,0 +1,162 @@
+{
+  "video_summary": {
+    "app_name": "Blood Pressure Monitor",
+    "overall_goal": "Record blood pressure readings (systolic/diastolic values) and view results on a chart",
+    "device_type": "Android",
+    "description": "User enters systolic and diastolic blood pressure values using the on-screen numeric keyboard, submits the reading, and views the recorded measurement on a chart display."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "00:00",
+      "timestamp_end": "00:02",
+      "screen_name": "Main Input Screen",
+      "what_screen_is_visible": "Blood pressure input form with numeric input fields for systolic and diastolic values. Status bar visible at top. Numeric keyboard not yet visible.",
+      "visible_ui_elements": [
+        "Input field (systolic)",
+        "Input field (diastolic)",
+        "Status bar",
+        "Navigation elements"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Systolic input field",
+      "system_response": "Input field focused, numeric keyboard appears",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Keyboard slides up from bottom",
+      "intent_task": "Begin entering systolic blood pressure value",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "00:02",
+      "timestamp_end": "00:08",
+      "screen_name": "Systolic Input",
+      "what_screen_is_visible": "Blood pressure input form with systolic field active. Numeric keyboard visible at bottom with blue highlight on keys.",
+      "visible_ui_elements": [
+        "Systolic input field (focused)",
+        "Diastolic input field",
+        "Numeric keyboard",
+        "Number keys 0-9",
+        "Delete button",
+        "Clear button"
+      ],
+      "user_gesture": "type_text",
+      "target_element": "Systolic input field via numeric keyboard",
+      "system_response": "Numbers appear in systolic field as user taps keyboard keys",
+      "navigation_change": "none",
+      "data_entered": "120",
+      "visual_feedback": "Numbers entered in field, keyboard keys highlight on tap",
+      "intent_task": "Enter systolic reading value (120)",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "00:08",
+      "timestamp_end": "00:12",
+      "screen_name": "Diastolic Input Transition",
+      "what_screen_is_visible": "Form with systolic value entered (120). Diastolic field visible below. Numeric keyboard still visible.",
+      "visible_ui_elements": [
+        "Systolic field with value '120'",
+        "Diastolic input field",
+        "Numeric keyboard"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Diastolic input field",
+      "system_response": "Focus shifts to diastolic field",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Diastolic field becomes focused/highlighted",
+      "intent_task": "Move to diastolic value input",
+      "confidence": "high"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "00:12",
+      "timestamp_end": "00:20",
+      "screen_name": "Diastolic Input",
+      "what_screen_is_visible": "Form with systolic=120 entered. Diastolic field now focused. Numeric keyboard visible.",
+      "visible_ui_elements": [
+        "Systolic field (completed)",
+        "Diastolic input field (focused)",
+        "Numeric keyboard",
+        "Number keys"
+      ],
+      "user_gesture": "type_text",
+      "target_element": "Diastolic input field via numeric keyboard",
+      "system_response": "Numbers appear in diastolic field",
+      "navigation_change": "none",
+      "data_entered": "80",
+      "visual_feedback": "Numbers entered in diastolic field, keyboard keys highlight",
+      "intent_task": "Enter diastolic reading value (80)",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "00:20",
+      "timestamp_end": "00:26",
+      "screen_name": "Submit/Results Transition",
+      "what_screen_is_visible": "Both systolic (120) and diastolic (80) values entered. Keyboard still visible. User gestures suggest tapping submit or moving to results.",
+      "visible_ui_elements": [
+        "Systolic field (120)",
+        "Diastolic field (80)",
+        "Numeric keyboard",
+        "Submit button or similar"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Submit button or results view trigger",
+      "system_response": "App processes input and transitions to results/chart view",
+      "navigation_change": "Navigation to results/chart display screen",
+      "data_entered": "",
+      "visual_feedback": "Keyboard dismisses, chart view appears",
+      "intent_task": "Submit reading and view results",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 6,
+      "timestamp_start": "00:26",
+      "timestamp_end": "00:32",
+      "screen_name": "Results/Chart View",
+      "what_screen_is_visible": "Blood pressure measurement result displayed as a chart. Circular gauge visualization showing the recorded reading (120/80). Chart shows blood pressure range and current reading position. Status indicator visible.",
+      "visible_ui_elements": [
+        "Circular pressure gauge chart",
+        "Recorded value display (120/80)",
+        "Chart legend",
+        "Back/navigation button",
+        "Status bar"
+      ],
+      "user_gesture": "wait",
+      "target_element": "Results chart display",
+      "system_response": "Chart animates and displays the recorded blood pressure reading",
+      "navigation_change": "Navigated from input screen to results/chart screen",
+      "data_entered": "",
+      "visual_feedback": "Chart with gauge visualization, reading clearly displayed, possible animation",
+      "intent_task": "View recorded blood pressure reading on chart",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "type_text",
+    "wait",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "App displays blood pressure input form",
+    "User taps systolic input field, keyboard appears",
+    "User enters systolic value (120) via numeric keyboard",
+    "User taps diastolic input field",
+    "User enters diastolic value (80) via numeric keyboard",
+    "User submits the reading",
+    "App displays recorded reading on chart/gauge visualization"
+  ],
+  "human_readable_step_summary": [
+    "Step 1: App opens on the blood pressure input screen with input fields for systolic and diastolic values.",
+    "Step 2: User taps the systolic field and a numeric keyboard appears at the bottom of the screen.",
+    "Step 3: User enters the systolic value (120) by tapping the numeric keys on the keyboard.",
+    "Step 4: User taps the diastolic input field to move focus there.",
+    "Step 5: User enters the diastolic value (80) by tapping the numeric keys.",
+    "Step 6: User submits the blood pressure reading by tapping a submit button or equivalent.",
+    "Step 7: The app transitions to a results screen showing the recorded blood pressure (120/80) displayed on a circular gauge chart."
+  ]
+}

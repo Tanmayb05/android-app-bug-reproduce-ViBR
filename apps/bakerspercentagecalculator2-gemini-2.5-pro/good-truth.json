@@ -1,0 +1,67 @@
+{
+  "video_summary": {
+    "app_name": "bakerspercentagecalculator2",
+    "overall_goal": "Access saved recipe and interact with app menu",
+    "device_type": "Android",
+    "description": "User views a saved 'cake' recipe and accesses the overflow menu showing backup/import options"
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "0:00",
+      "timestamp_end": "0:02",
+      "screen_name": "Home",
+      "what_screen_is_visible": "Home screen with existing recipe 'cake' in the list",
+      "visible_ui_elements": ["title: Baker's Percentage Calculator", "recipe card: cake", "share icon", "delete icon", "button: +"],
+      "user_gesture": "none",
+      "target_element": "none",
+      "system_response": "Home screen displays saved recipes",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Recipe 'cake' visible in list with action icons",
+      "intent_task": "View home screen with saved recipes",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "0:03",
+      "timestamp_end": "0:04",
+      "screen_name": "Home",
+      "what_screen_is_visible": "Home screen with menu dropdown appearing",
+      "visible_ui_elements": ["recipe card: cake", "menu dropdown (visible)", "option: Import Recipe", "option: Backup Recipes", "option: Restore Recipes"],
+      "user_gesture": "tap",
+      "target_element": "menu: three dots button",
+      "system_response": "Overflow menu appears with three options",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Dropdown menu slides down from menu button",
+      "intent_task": "Open app menu for backup/import options",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "0:05",
+      "timestamp_end": "0:08",
+      "screen_name": "Home",
+      "what_screen_is_visible": "Home screen with menu still visible, showing 'Backup successful!' notification",
+      "visible_ui_elements": ["recipe card: cake", "menu options still visible", "notification: Backup successful!", "notification icon"],
+      "user_gesture": "tap",
+      "target_element": "Backup Recipes option (implied)",
+      "system_response": "Backup operation completes successfully",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Success notification appears at bottom of screen",
+      "intent_task": "Backup recipes and confirm success",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": ["tap", "menu_interaction", "notification_display"],
+  "overall_flow": ["Display home screen with saved recipe", "Open overflow menu", "Select backup option", "Receive success notification"],
+  "human_readable_step_summary": [
+    "Home screen displays with the 'cake' recipe saved in the list",
+    "User taps the menu button (three dots) to open overflow menu",
+    "Menu shows options: Import Recipe, Backup Recipes, Restore Recipes",
+    "User selects Backup Recipes option",
+    "Success notification 'Backup successful!' appears confirming the operation completed"
+  ]
+}

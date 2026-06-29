@@ -1,95 +1,216 @@
-# Run Issue: Coordinate-Based Action Execution Failure
+# ViBR Run Issue Report: bakerspercentagecalculator2 (GOOD)
 
-**App:** bakerspercentagecalculator2  
-**Model:** gemini-2.5-pro  
-**Video Quality:** good  
-**Status:** INCOMPLETE (0/3 segments executed)
+**Generated:** 2026-06-20 18:16:42
 
-## Issue Summary
+## Log Summary
 
-LLM generated tap actions using hardcoded pixel coordinates instead of element-based selectors. Coordinates were valid in the reference video but stale in the live device state, causing taps to miss or hit unintended elements. This resulted in catastrophic state divergence (recipe list → empty state) and cascading action failures across all segments.
+| Time | Module | Event |
+| --- | --- | --- |
+| 2026-05-30 19:57:40 | dino_detection | Annotated DINO output saved to apps/bakerspercentagecalculator2-gemini-2.5-pro/g... |
+| 2026-05-30 19:57:40 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:57:48 | __main__ | Relevant regions: {'target_regions': [9], 'predicted_action': 'tap'} |
+| 2026-05-30 19:57:48 | __main__ | GPT selected regions: [9] |
+| 2026-05-30 19:57:48 | dino_detection | Relevant-only annotation saved to apps/bakerspercentagecalculator2-gemini-2.5-pr... |
+| 2026-05-30 19:57:48 | __main__ | Comparing state: reference=step_0v_relevant_regions.png vs live=step_0e_screensh... |
+| 2026-05-30 19:57:48 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:57:57 | __main__ | Attempting to align state (try 1/3)... |
+| 2026-05-30 19:57:59 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:58:21 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-05-30 19:58:21 | execute_action | [1] Tap the three dots icon in the top right corner. -> tap |
+| 2026-05-30 19:58:23 | __main__ | Comparing state (recovery attempt 1): reference=step_0v_tmp_stop.png vs live=ste... |
+| 2026-05-30 19:58:23 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:58:31 | __main__ | Attempting to align state (try 2/3)... |
+| 2026-05-30 19:58:33 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:58:43 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-05-30 19:58:43 | execute_action | [1] Tap the three-dot menu icon in the top right corner. -> tap |
+| 2026-05-30 19:58:45 | __main__ | Comparing state (recovery attempt 2): reference=step_0v_tmp_stop.png vs live=ste... |
+| 2026-05-30 19:58:45 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:58:52 | __main__ | Attempting to align state (try 3/3)... |
+| 2026-05-30 19:58:54 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:59:00 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-05-30 19:59:00 | execute_action | [1] Tap the three-dot menu icon. -> tap |
+| 2026-05-30 19:59:01 | __main__ | Comparing state (recovery attempt 3): reference=step_0v_tmp_stop.png vs live=ste... |
+| 2026-05-30 19:59:01 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:59:08 | __main__ | Skipping action: current GUI state does not match start state. Mismatch reason: ... |
+| 2026-05-30 19:59:09 | __main__ | Processing segment 1... |
+| 2026-05-30 19:59:12 | dino_detection | Annotated DINO output saved to apps/bakerspercentagecalculator2-gemini-2.5-pro/g... |
+| 2026-05-30 19:59:12 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:59:27 | __main__ | Relevant regions: {'target_regions': [9], 'predicted_action': 'tap'} |
+| 2026-05-30 19:59:27 | __main__ | GPT selected regions: [9] |
+| 2026-05-30 19:59:27 | dino_detection | Relevant-only annotation saved to apps/bakerspercentagecalculator2-gemini-2.5-pr... |
+| 2026-05-30 19:59:27 | __main__ | Comparing state: reference=step_1v_relevant_regions.png vs live=step_1e_screensh... |
+| 2026-05-30 19:59:27 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:59:39 | __main__ | Attempting to align state (try 1/3)... |
+| 2026-05-30 19:59:41 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 19:59:54 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-05-30 19:59:54 | execute_action | [1] Tap the three-dot menu icon to open the menu. -> tap |
+| 2026-05-30 19:59:56 | __main__ | Comparing state (recovery attempt 1): reference=step_1v_tmp_stop.png vs live=ste... |
+| 2026-05-30 19:59:56 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:00:04 | __main__ | Attempting to align state (try 2/3)... |
+| 2026-05-30 20:00:06 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:00:17 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-05-30 20:00:17 | execute_action | [1] Tap the three dots menu icon. -> tap |
+| 2026-05-30 20:00:19 | __main__ | Comparing state (recovery attempt 2): reference=step_1v_tmp_stop.png vs live=ste... |
+| 2026-05-30 20:00:19 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:00:25 | __main__ | Attempting to align state (try 3/3)... |
+| 2026-05-30 20:00:28 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:00:41 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-05-30 20:00:41 | execute_action | [1] Tap the three-dot menu icon to open more options. -> tap |
+| 2026-05-30 20:00:42 | __main__ | Comparing state (recovery attempt 3): reference=step_1v_tmp_stop.png vs live=ste... |
+| 2026-05-30 20:00:42 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:00:49 | __main__ | Skipping action: current GUI state does not match start state. Mismatch reason: ... |
+| 2026-05-30 20:00:50 | __main__ | Processing segment 2... |
+| 2026-05-30 20:00:53 | dino_detection | Annotated DINO output saved to apps/bakerspercentagecalculator2-gemini-2.5-pro/g... |
+| 2026-05-30 20:00:53 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:01:04 | __main__ | Relevant regions: {'target_regions': [1], 'predicted_action': 'tap'} |
+| 2026-05-30 20:01:04 | __main__ | GPT selected regions: [1] |
+| 2026-05-30 20:01:04 | dino_detection | Relevant-only annotation saved to apps/bakerspercentagecalculator2-gemini-2.5-pr... |
+| 2026-05-30 20:01:04 | __main__ | Comparing state: reference=step_2v_relevant_regions.png vs live=step_2e_screensh... |
+| 2026-05-30 20:01:04 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:01:11 | __main__ | Attempting to align state (try 1/3)... |
+| 2026-05-30 20:01:14 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:01:25 | __main__ | Recovery using region index: 3 at (964, 1741) |
+| 2026-05-30 20:01:25 | execute_action | [1] Tap the '+' button to add your first recipe. -> tap |
+| 2026-05-30 20:01:27 | __main__ | Comparing state (recovery attempt 1): reference=step_2v_tmp_stop.png vs live=ste... |
+| 2026-05-30 20:01:27 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:01:33 | __main__ | Attempting to align state (try 2/3)... |
+| 2026-05-30 20:01:35 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:01:51 | execute_action | [1] Go back to the previous screen. -> back |
+| 2026-05-30 20:01:52 | __main__ | Comparing state (recovery attempt 2): reference=step_2v_tmp_stop.png vs live=ste... |
+| 2026-05-30 20:01:52 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:01:59 | __main__ | Attempting to align state (try 3/3)... |
+| 2026-05-30 20:02:01 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:02:13 | __main__ | Recovery using region index: 3 at (964, 1741) |
+| 2026-05-30 20:02:13 | execute_action | [1] Tap the '+' button to add a recipe. -> tap |
+| 2026-05-30 20:02:15 | __main__ | Comparing state (recovery attempt 3): reference=step_2v_tmp_stop.png vs live=ste... |
+| 2026-05-30 20:02:15 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-05-30 20:02:21 | __main__ | Skipping action: current GUI state does not match start state. Mismatch reason: ... |
+| 2026-05-30 20:02:21 | __main__ | Video processing completed. |
+| 2026-05-30 20:02:21 | run_stats | ================================================================================ |
+| 2026-05-30 20:02:21 | run_stats | RUN SUMMARY |
+| 2026-05-30 20:02:21 | run_stats | ================================================================================ |
+| 2026-05-30 20:02:21 | run_stats | App: bakerspercentagecalculator2 |
+| 2026-05-30 20:02:21 | run_stats | Video: good-video.mp4 |
+| 2026-05-30 20:02:21 | run_stats | Provider + Model: gemini / gemini-2.5-pro |
+| 2026-05-30 20:02:21 | run_stats | Algorithm: clip |
+| 2026-05-30 20:02:21 | run_stats | Status: incomplete |
+| 2026-05-30 20:02:21 | run_stats | Scenes: 3 |
+| 2026-05-30 20:02:21 | run_stats | Actions executed: 0 |
+| 2026-05-30 20:02:21 | run_stats | LLM calls: 25 |
+| 2026-05-30 20:02:21 | run_stats | LLM total latency: 240.62s (4m 0s) |
+| 2026-05-30 20:02:21 | run_stats | LLM avg latency: 9.62s (0m 9s) |
+| 2026-05-30 20:02:21 | run_stats | Input tokens: 23663 |
+| 2026-05-30 20:02:21 | run_stats | Output tokens: 1433 |
+| 2026-05-30 20:02:21 | run_stats | Tokens used: 25096 |
+| 2026-05-30 20:02:21 | run_stats | Cost: $0.0439 (input: $0.0296 @ $1.25/M, output: $0.0143 @ $10.0/M) |
+| 2026-05-30 20:02:21 | run_stats | Total duration: 304.84s (5m 4s) |
+| 2026-05-30 20:02:21 | run_stats | ================================================================================ |
+| 2026-05-30 20:02:21 | run_stats | Summary written to apps/bakerspercentagecalculator2-gemini-2.5-pro/good-run-summ... |
 
-## Root Cause
+### Interpretation
 
-**Action Resolution Pipeline Issue:**
+Execution log shows 100 events total (88 INFO, 12 WARNING, 0 ERROR). Vision model (GroundingDINO) was invoked for object detection. Warnings detected (12 events), suggesting fallback behaviors or partial failures. State mismatches detected between expected and actual UI. Segment replay operations were performed.
 
-The `resolve_action_position()` function in `segment_replay.py` attempts to map LLM actions to device elements in this order:
+## Executive Summary
 
-1. **Region index** → DINO detection bounding box center
-2. **Text match** → Search XML elements by text content
-3. **Position fallback** → Find closest element to hardcoded coordinates
+- **Expected steps (from truth):** 3
+- **Executed actions:** 0
+- **Coverage:** 0.0%
+- **Gap:** 3 step(s)
 
-**Problem:** The LLM action format (defined in `prompts/action_region.py`) only supports:
-- `"region"`: integer index into highlighted DINO regions
-- `"position"`: raw pixel coordinates [x, y]
-- No `"text"` field option
+The automation achieved **0.0% coverage**, with 3 step(s) uncompleted.
 
-When LLM returns `"position"` (which it does when no relevant DINO region is highlighted), the code attempts text-based matching first (which always fails since no text field exists), then falls back to **coordinate-based closest-element matching**. This fails when:
+## Ground Truth vs Execution
 
-1. Coordinates derive from the reference/start image, not the live device
-2. Device has different screen resolution/DPI than source video
-3. UI elements are not visible in live state (e.g., menu already closed, different activity)
+| Step | Action | Status |
+| --- | --- | --- |
+| 1 | View home screen with saved recipes | ✗ NOT EXECUTED |
+| 2 | Open app menu for backup/import options | ✗ NOT EXECUTED |
+| 3 | Backup recipes and confirm success | ✗ NOT EXECUTED |
 
-## Evidence
+## Detailed Failure Analysis
 
-**Log traces (lines 140-160 of good-run.log):**
 
-```
-[execute_action] [1] Tap the three dots icon in the top right corner. -> tap
-Recovery matched element: '' at (540, 147)
-```
+### Failure 1: State Mismatch
 
-Repeated 3 times with identical coordinate (540, 147), suggesting:
-- Fallback to position-based closest-element matching
-- Element text is empty (`''`), indicating stale/wrong element
-- No element in XML actually matches the intended 3-dots menu icon
+**Error:** Attempting to align state (try 1/3)...
 
-**Visual evidence (screenshot comparison):**
+### Failure 2: State Mismatch
 
-- `step_0v_tmp_start.png`: Recipe "cake" visible + menu open in background
-- `step_0e_screenshot_1.png` (after tap): Empty state "Press the + button to add your first recipe"
+**Error:** Attempting to align state (try 2/3)...
 
-**Conclusion:** Tap at (540, 147) either:
-1. Navigated away from current activity (hit back/menu close)
-2. Hit unintended element (e.g., overlay dismissal button)
-3. Missed entirely due to coordinate mismatch between reference and device
+### Failure 3: State Mismatch
 
-## Impact
+**Error:** Attempting to align state (try 3/3)...
 
-- **Segment 0:** 3 failed recovery attempts → action skipped → state misalignment
-- **Segment 1:** Similar 3-dots tap failures due to corrupted state from Segment 0
-- **Segment 2:** Different action type (tap '+' button) succeeded, but baseline already broken
-- **Overall:** 0/3 segments completed; 25 LLM calls wasted on recovery loops
+### Failure 4: State Mismatch
 
-## Recommended Fixes
+**Error:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference screen shows a list of recipes with one item ('cake') and an open menu, while the current screen shows an empty state prompting the user to add a recipe. the content and available interactions are fundamentally different.
 
-### Priority 1: Extend LLM Action Format
-Add `"text"` field to action format in `prompts/action_region.py`:
+### Failure 5: State Mismatch
 
-```json
-{
-  "action": "tap",
-  "text": "three dots icon",
-  "description": "Tap the three-dot menu icon to open options."
-}
-```
+**Error:** Attempting to align state (try 1/3)...
 
-Update `match_action_to_element()` to search by text description + fuzzy matching against XML content and accessibility labels.
+### Failure 6: State Mismatch
 
-### Priority 2: Use DINO Region Matching
-Force LLM to always return `"region"` index when available (modify prompt to highlight 3-dots as region 9). Avoid coordinate fallback entirely for critical UI elements.
+**Error:** Attempting to align state (try 2/3)...
 
-### Priority 3: Validate Coordinates
-Before executing tap, check if element at coordinate(s) actually exists in live XML. If not found, re-query LLM for text-based description or region index.
+### Failure 7: State Mismatch
 
-### Priority 4: Add State Validation
-After each action, compare reference stop state vs live state using LLM vision. If mismatch > threshold, trigger recovery before proceeding to next segment.
+**Error:** Attempting to align state (try 3/3)...
 
-## Metadata
+### Failure 8: State Mismatch
 
-- **Segments:** 4 total (0, 1, 2, 3 skipped)
-- **LLM Calls:** 25 (10 action decisions, 15 recovery/consistency checks)
-- **Total Latency:** 304.84s
-- **Cost:** $0.0439
-- **Video Frames:** 211
-- **Clip Similarity Cache:** Hit (reused from prior run)
+**Error:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image shows a 'downloads' file saving screen with a 'save' button. the current image shows the main screen of the 'baker's percentage calculator' app with a '+' button to add a recipe. the two screens represent completely different functionalities and states.
+
+### Failure 9: State Mismatch
+
+**Error:** Attempting to align state (try 1/3)...
+
+### Failure 10: State Mismatch
+
+**Error:** Attempting to align state (try 2/3)...
+
+### Failure 11: State Mismatch
+
+**Error:** Attempting to align state (try 3/3)...
+
+### Failure 12: State Mismatch
+
+**Error:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference screen displays a list of saved recipes, with an option to add a new one. the current screen is the form for creating a new recipe, which is a different state in the application's workflow.
+
+## Root Cause Categorization
+
+### Phase 1: Action Segmentation
+
+No failures in this phase.
+
+### Phase 2: GUI State Comparison
+
+- **State Mismatch:** Attempting to align state (try 1/3)...
+- **State Mismatch:** Attempting to align state (try 2/3)...
+- **State Mismatch:** Attempting to align state (try 3/3)...
+- **State Mismatch:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference screen shows a list of recipes with one item ('cake') and an open menu, while the current screen shows an empty state prompting the user to add a recipe. the content and available interactions are fundamentally different.
+- **State Mismatch:** Attempting to align state (try 1/3)...
+- **State Mismatch:** Attempting to align state (try 2/3)...
+- **State Mismatch:** Attempting to align state (try 3/3)...
+- **State Mismatch:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image shows a 'downloads' file saving screen with a 'save' button. the current image shows the main screen of the 'baker's percentage calculator' app with a '+' button to add a recipe. the two screens represent completely different functionalities and states.
+- **State Mismatch:** Attempting to align state (try 1/3)...
+- **State Mismatch:** Attempting to align state (try 2/3)...
+- **State Mismatch:** Attempting to align state (try 3/3)...
+- **State Mismatch:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference screen displays a list of saved recipes, with an option to add a new one. the current screen is the form for creating a new recipe, which is a different state in the application's workflow.
+
+### Phase 3: Bug Replay
+
+No failures in this phase.
+
+## Conclusions
+
+This execution demonstrates **0.0% coverage** of expected steps. The dominant failure mode is **Phase 2: GUI State Comparison**, accounting for the majority of errors. GUI state comparison failures (12) suggest mismatches between expected and actual UI state. Overall, the system failed to complete 3 of 3 steps, limiting the ability to fully replicate the good behavior.
+
+## TL;DR
+
+- ✗ 3/3 steps failed (coverage: 0.0%)
+- Dominant issue: Phase 2: GUI State Comparison
+- Critical events: 0 errors, 12 warnings
+- **Verdict:** FAIL — Significant execution gaps prevent behavior replication

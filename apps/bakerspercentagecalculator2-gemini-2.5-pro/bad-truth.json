@@ -1,0 +1,83 @@
+{
+  "video_summary": {
+    "app_name": "bakerspercentagecalculator2",
+    "overall_goal": "App interaction on physical device (demo video)",
+    "device_type": "Android",
+    "description": "Physical device demonstration with limited visibility and app state unclear"
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "0:00",
+      "timestamp_end": "0:03",
+      "screen_name": "Unknown",
+      "what_screen_is_visible": "Screen is dark or very dim, app state unclear",
+      "visible_ui_elements": ["minimal UI elements visible", "device bezel outline"],
+      "user_gesture": "none",
+      "target_element": "none",
+      "system_response": "App appears to be in loading state or display issue",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Low brightness, high contrast darkness",
+      "intent_task": "App initialization or recovery",
+      "confidence": "low"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "0:04",
+      "timestamp_end": "0:06",
+      "screen_name": "Unknown",
+      "what_screen_is_visible": "Screen remains dark with minimal visibility",
+      "visible_ui_elements": ["faint status bar", "device outline"],
+      "user_gesture": "none",
+      "target_element": "none",
+      "system_response": "No change in app state or visibility",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Screen remains dark",
+      "intent_task": "Unknown - potential display or app issue",
+      "confidence": "low"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "0:07",
+      "timestamp_end": "0:09",
+      "screen_name": "Unknown",
+      "what_screen_is_visible": "Screen continues dark, device remains at angle",
+      "visible_ui_elements": ["minimal visible UI"],
+      "user_gesture": "none",
+      "target_element": "none",
+      "system_response": "App state unresponsive or display issue persists",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Continued poor visibility",
+      "intent_task": "Unknown",
+      "confidence": "low"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "0:10",
+      "timestamp_end": "0:12",
+      "screen_name": "Unknown",
+      "what_screen_is_visible": "Screen gradually becomes slightly more visible as device angle may be improving",
+      "visible_ui_elements": ["app UI elements beginning to appear", "status bar more visible"],
+      "user_gesture": "device_repositioned",
+      "target_element": "none",
+      "system_response": "Screen brightness or contrast improves slightly",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Slight improvement in display visibility",
+      "intent_task": "Improve viewing angle or screen visibility",
+      "confidence": "medium"
+    }
+  ],
+  "detected_action_types": ["device_repositioning", "potential_screen_issue"],
+  "overall_flow": ["Dark/dim screen state", "Minimal visibility throughout video", "Gradual visibility improvement", "Device repositioning"],
+  "human_readable_step_summary": [
+    "Video begins with device screen very dark or dim, app state unclear",
+    "Screen remains dark for extended period with minimal UI visibility",
+    "Device appears to be at an unfavorable angle for display visibility",
+    "Screen gradually becomes more visible as device is repositioned",
+    "Display issues persist throughout the video sequence"
+  ]
+}

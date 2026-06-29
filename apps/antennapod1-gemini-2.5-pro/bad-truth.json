@@ -1,0 +1,161 @@
+{
+  "video_summary": {
+    "app_name": "antennapod1",
+    "overall_goal": "Navigate podcast app to browse and play a podcast episode",
+    "device_type": "Android",
+    "description": "User starts with onboarding dialog, navigates through home, queue, and subscriptions tabs to find and play a podcast"
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "00:00",
+      "timestamp_end": "00:02",
+      "screen_name": "OnboardingDialog",
+      "what_screen_is_visible": "AntennaPod onboarding dialog overlay on top of app. Shows welcome message 'Welcome to AntennaPod' and action buttons 'Unsubscribe' and primary button",
+      "visible_ui_elements": [
+        "AntennaPod logo and branding",
+        "Welcome text",
+        "Description: 'Easy-to-use, flexible and open-source podcast manager and player'",
+        "Unsubscribe button",
+        "Primary action button (blue)"
+      ],
+      "user_gesture": "wait",
+      "target_element": "OnboardingDialog",
+      "system_response": "Dialog displayed on app startup",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Dialog overlay visible with semi-transparent background",
+      "intent_task": "Observe onboarding state",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "00:02",
+      "timestamp_end": "00:05",
+      "screen_name": "HomeScreen",
+      "what_screen_is_visible": "AntennaPod home tab with welcome message and icon. Bottom navigation visible with Home tab highlighted",
+      "visible_ui_elements": [
+        "Home tab indicator",
+        "Welcome icon and text 'Welcome to AntennaPod'",
+        "Subtitle: 'The easiest way to subscribe to your favourite podcasts'",
+        "Bottom navigation: Home, Queue, Downloads, Subscriptions, Profile"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "HomeScreen",
+      "system_response": "Home tab becomes active after onboarding dialog dismissal",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Home screen fully displayed with navigation active",
+      "intent_task": "View home screen",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "00:05",
+      "timestamp_end": "00:10",
+      "screen_name": "QueueScreen",
+      "what_screen_is_visible": "Queue tab selected in bottom navigation. Screen shows 'Queue' header with empty state message: 'No episodes in queue, add new from your podcast list'",
+      "visible_ui_elements": [
+        "Queue tab (active in bottom navigation)",
+        "Empty state icon and text",
+        "Message about adding episodes from podcast list"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Queue navigation tab",
+      "system_response": "Switches to Queue tab, displays empty state",
+      "navigation_change": "push",
+      "data_entered": "",
+      "visual_feedback": "Queue tab highlights, content transitions",
+      "intent_task": "View podcast queue",
+      "confidence": "high"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "00:10",
+      "timestamp_end": "00:15",
+      "screen_name": "SubscriptionsScreen",
+      "what_screen_is_visible": "Subscriptions tab selected. Shows empty state with message: 'No subscriptions. To subscribe, press the icon below'",
+      "visible_ui_elements": [
+        "Subscriptions tab (active in bottom navigation, highlighted in blue)",
+        "Empty state icon",
+        "Text: 'No subscriptions. To subscribe, press the icon below'"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Subscriptions navigation tab",
+      "system_response": "Switches to Subscriptions tab, displays empty state",
+      "navigation_change": "push",
+      "data_entered": "",
+      "visual_feedback": "Subscriptions tab highlights, content transitions",
+      "intent_task": "View subscriptions list",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "00:15",
+      "timestamp_end": "00:20",
+      "screen_name": "AddPodcastScreen",
+      "what_screen_is_visible": "Add Podcast dialog or screen. Shows podcast search with 'LARGE FITS' visible and action buttons. Podcast list with entries visible: 'The Brightest Star 51:33 00' and other episodes",
+      "visible_ui_elements": [
+        "Header: 'Add podcast'",
+        "Search/podcast discovery interface",
+        "Podcast artwork thumbnails",
+        "Episode listings with titles and durations",
+        "Multiple podcast entries in list"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Add podcast button/icon",
+      "system_response": "Opens add podcast dialog with search interface and results",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Dialog or overlay appears with podcast discovery content",
+      "intent_task": "Add new podcast to subscriptions",
+      "confidence": "high"
+    },
+    {
+      "step_number": 6,
+      "timestamp_start": "00:20",
+      "timestamp_end": "00:34",
+      "screen_name": "PodcastDetailScreen",
+      "what_screen_is_visible": "Podcast detail page with 'Bridge of Lies' podcast displayed. Shows podcast artwork, title, episode list, and playback controls at bottom. Player bar shows track info and play/pause buttons",
+      "visible_ui_elements": [
+        "Podcast artwork (large, prominently displayed)",
+        "Podcast title 'Bridge of Lies'",
+        "Episode description",
+        "Subscribe button",
+        "Episode list with titles and durations",
+        "Playback controls: play/pause, next, previous",
+        "Progress indicator showing playback position"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Podcast list item or episode",
+      "system_response": "Navigates to podcast detail screen, displays full podcast info and episodes",
+      "navigation_change": "push",
+      "data_entered": "",
+      "visual_feedback": "Podcast detail page fully loaded with artwork and player visible",
+      "intent_task": "View podcast episodes and play audio",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "wait",
+    "screen_transition",
+    "tap",
+    "press_back"
+  ],
+  "overall_flow": [
+    "AntennaPod starts with onboarding dialog",
+    "User navigates through home screen",
+    "User views queue (empty state)",
+    "User navigates to subscriptions tab (empty)",
+    "User opens add podcast interface",
+    "User views podcast detail page with player controls"
+  ],
+  "human_readable_step_summary": [
+    "AntennaPod onboarding dialog appears on app startup.",
+    "Home tab displays welcome message and navigation.",
+    "User taps Queue tab to view episode queue (empty).",
+    "User taps Subscriptions tab to view subscriptions (empty).",
+    "User opens add podcast interface to discover and add podcasts.",
+    "User navigates to podcast detail page, showing 'Bridge of Lies' podcast with player controls."
+  ]
+}

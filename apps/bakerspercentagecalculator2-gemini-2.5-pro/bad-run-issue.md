@@ -1,155 +1,169 @@
-# Issue Analysis: DINO Detection Failure in Segment 0
+# ViBR Run Issue Report: bakerspercentagecalculator2 (BAD)
+
+**Generated:** 2026-06-20 18:16:42
+
+## Log Summary
+
+| Time | Module | Event |
+| --- | --- | --- |
+| 2026-06-01 19:20:38 | dino_detection | Annotated DINO output saved to apps/bakerspercentagecalculator2-gemini-2.5-pro/b... |
+| 2026-06-01 19:20:38 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:20:46 | __main__ | Relevant regions: {'target_regions': [2], 'predicted_action': 'tap'} |
+| 2026-06-01 19:20:46 | __main__ | GPT selected regions: [2] |
+| 2026-06-01 19:20:46 | dino_detection | Relevant-only annotation saved to apps/bakerspercentagecalculator2-gemini-2.5-pr... |
+| 2026-06-01 19:20:46 | __main__ | Comparing state: reference=step_0v_relevant_regions.png vs live=step_0e_screensh... |
+| 2026-06-01 19:20:46 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:20:53 | __main__ | Attempting to align state (try 1/3)... |
+| 2026-06-01 19:20:56 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:21:09 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-06-01 19:21:09 | execute_action | [1] Tap on the three dot menu icon. -> tap |
+| 2026-06-01 19:21:12 | __main__ | Comparing state (recovery attempt 1): reference=step_0v_tmp_stop.png vs live=ste... |
+| 2026-06-01 19:21:12 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:21:17 | __main__ | Attempting to align state (try 2/3)... |
+| 2026-06-01 19:21:20 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:21:31 | __main__ | Recovery matched element: '' at (540, 147) |
+| 2026-06-01 19:21:31 | execute_action | [1] Tap on the three-dot menu icon in the top right corner. -> tap |
+| 2026-06-01 19:21:34 | __main__ | Comparing state (recovery attempt 2): reference=step_0v_tmp_stop.png vs live=ste... |
+| 2026-06-01 19:21:34 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:21:43 | __main__ | Attempting to align state (try 3/3)... |
+| 2026-06-01 19:21:46 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:21:59 | __main__ | Recovery using region index: 3 at (964, 1741) |
+| 2026-06-01 19:21:59 | execute_action | [1] Press the + button to add your first recipe! -> tap |
+| 2026-06-01 19:22:00 | __main__ | Comparing state (recovery attempt 3): reference=step_0v_tmp_stop.png vs live=ste... |
+| 2026-06-01 19:22:00 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:22:06 | __main__ | Skipping action: current GUI state does not match start state. Mismatch reason: ... |
+| 2026-06-01 19:22:07 | __main__ | Processing segment 1/1... |
+| 2026-06-01 19:22:12 | dino_detection | Annotated DINO output saved to apps/bakerspercentagecalculator2-gemini-2.5-pro/b... |
+| 2026-06-01 19:22:12 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:22:20 | __main__ | Relevant regions: {'target_regions': [0], 'predicted_action': 'tap'} |
+| 2026-06-01 19:22:20 | __main__ | GPT selected regions: [0] |
+| 2026-06-01 19:22:20 | dino_detection | Relevant-only annotation saved to apps/bakerspercentagecalculator2-gemini-2.5-pr... |
+| 2026-06-01 19:22:20 | __main__ | Comparing state: reference=step_1v_relevant_regions.png vs live=step_1e_screensh... |
+| 2026-06-01 19:22:21 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:22:27 | __main__ | Attempting to align state (try 1/3)... |
+| 2026-06-01 19:22:30 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:22:55 | __main__ | Recovery using region index: 9 at (539, 1468) |
+| 2026-06-01 19:22:55 | execute_action | [1] Tap the Save Recipe button. -> tap |
+| 2026-06-01 19:22:57 | __main__ | Comparing state (recovery attempt 1): reference=step_1v_tmp_stop.png vs live=ste... |
+| 2026-06-01 19:22:57 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:23:03 | __main__ | Attempting to align state (try 2/3)... |
+| 2026-06-01 19:23:06 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:23:20 | execute_action | [1] The application is already open, and on a different screen than the one that... |
+| 2026-06-01 19:23:23 | __main__ | Comparing state (recovery attempt 2): reference=step_1v_tmp_stop.png vs live=ste... |
+| 2026-06-01 19:23:23 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:23:31 | __main__ | Attempting to align state (try 3/3)... |
+| 2026-06-01 19:23:33 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:23:48 | execute_action | [1] The current screen is already in the target application that was opened by t... |
+| 2026-06-01 19:23:51 | __main__ | Comparing state (recovery attempt 3): reference=step_1v_tmp_stop.png vs live=ste... |
+| 2026-06-01 19:23:51 | google_genai.models | AFC is enabled with max remote calls: 10. |
+| 2026-06-01 19:23:58 | __main__ | Skipping action: current GUI state does not match start state. Mismatch reason: ... |
+| 2026-06-01 19:23:58 | __main__ | Video processing completed. |
+| 2026-06-01 19:23:58 | run_stats | ================================================================================ |
+| 2026-06-01 19:23:58 | run_stats | RUN SUMMARY |
+| 2026-06-01 19:23:58 | run_stats | ================================================================================ |
+| 2026-06-01 19:23:58 | run_stats | App: bakerspercentagecalculator2 |
+| 2026-06-01 19:23:58 | run_stats | Video: bad-video.mp4 |
+| 2026-06-01 19:23:58 | run_stats | Provider + Model: gemini / gemini-2.5-pro |
+| 2026-06-01 19:23:58 | run_stats | Algorithm: clip |
+| 2026-06-01 19:23:58 | run_stats | Status: incomplete |
+| 2026-06-01 19:23:58 | run_stats | Scenes: 2 |
+| 2026-06-01 19:23:58 | run_stats | Actions executed: 0 |
+| 2026-06-01 19:23:58 | run_stats | LLM calls: 17 |
+| 2026-06-01 19:23:58 | run_stats | LLM total latency: 168.00s (2m 47s) |
+| 2026-06-01 19:23:58 | run_stats | LLM avg latency: 9.88s (0m 9s) |
+| 2026-06-01 19:23:58 | run_stats | Input tokens: 15777 |
+| 2026-06-01 19:23:58 | run_stats | Output tokens: 928 |
+| 2026-06-01 19:23:58 | run_stats | Tokens used: 16705 |
+| 2026-06-01 19:23:58 | run_stats | Cost: $0.0290 (input: $0.0197 @ $1.25/M, output: $0.0093 @ $10.0/M) |
+| 2026-06-01 19:23:58 | run_stats | Total duration: 234.49s (3m 54s) |
+| 2026-06-01 19:23:58 | run_stats | ================================================================================ |
+| 2026-06-01 19:23:58 | run_stats | Summary written to apps/bakerspercentagecalculator2-gemini-2.5-pro/bad-run-summa... |
+
+### Interpretation
+
+Execution log shows 72 events total (64 INFO, 8 WARNING, 0 ERROR). Vision model (GroundingDINO) was invoked for object detection. Warnings detected (8 events), suggesting fallback behaviors or partial failures. State mismatches detected between expected and actual UI. Segment replay operations were performed.
 
 ## Executive Summary
 
-Frame detection system (DINO) failed to extract and process reference frames from the intended segment. Instead of analyzing frames from segment 0 (expected start: 0-2 seconds), DINO extracted frames from segment 1 (actual start: 7.2-8.67 seconds). This temporal displacement caused subsequent action execution to operate on entirely different UI states, breaking downstream workflow verification.
+- **Expected steps (from truth):** 4
+- **Executed actions:** 0
+- **Coverage:** 0.0%
+- **Gap:** 4 step(s)
 
-## Problem Statement
+The automation achieved **0.0% coverage**, with 4 step(s) uncompleted.
 
-**Observed Behavior:**
-- Segment 0 marked with DINO detections showing header bar, navigation bar, toolbar, buttons, icons in high density
-- Expected frame: Recipe list screen with overflow menu icon (video timestamp 0:00-0:02)
-- Actual frame extracted: Empty app screen prompting "Add new recipe" (video timestamp ~7.2 sec)
-- UI state mismatch prevented any valid action execution in segment 0
+## Ground Truth vs Execution
 
-**Evidence:**
-- Log entry 118: `Segment boundaries: [(0, 428), (432, 520), (524, 670)]`
-- Log entry 129: DINO output saved with high detection count
-- Log entries 131-159: Four consecutive state alignment failures (retries 1-3 + skip)
-- Error message (line 159): "reference image shows system file manager...current image shows...empty...Add Recipe prompt"
+| Step | Action | Status |
+| --- | --- | --- |
+| 1 | App initialization or recovery | ✗ NOT EXECUTED |
+| 2 | Unknown - potential display or app issue | ✗ NOT EXECUTED |
+| 3 | Unknown | ✗ NOT EXECUTED |
+| 4 | Improve viewing angle or screen visibility | ✗ NOT EXECUTED |
 
-## Root Cause Analysis
+## Detailed Failure Analysis
 
-### 1. Segmentation Algorithm Failure
 
-**Algorithm:** CLIP-based visual similarity segmentation (frame_step=1, stable_sim_threshold=0.95, stable_interval_threshold=1)
+### Failure 1: State Mismatch
 
-**Expected Behavior:**
-- Video contains 4 distinct steps spanning ~8.8 seconds total:
-  - Step 1 (0:00-0:02): Recipe list → tap overflow menu
-  - Step 2 (0:02-0:04): Menu open → select "Backup Recipes"
-  - Step 3 (0:04-0:05.5): File picker → save backup
-  - Step 4 (0:06-0:08.83): Return to app → success snackbar
+**Error:** Attempting to align state (try 1/3)...
 
-**Actual Behavior:**
-- Segment 0 spans frames 0-428 (~7.1 seconds at 60 fps)
-  - **Contains 3 complete scene transitions within single segment**
-  - Includes: recipe list → menu open → file picker dialog
-  - CLIP embedding similarity remained ≥0.95 across all these transitions
+### Failure 2: State Mismatch
 
-**Why This Happened:**
-CLIP visual encoder treats abstract scene changes (different UI dialogs, menu overlays, layout shifts) as maintaining semantic equivalence. The model learned on natural image datasets where "recipe list screen" and "file picker overlay" may share sufficient visual tokens (app chrome, status bar, navigation patterns) to exceed 0.95 threshold. CLIP does not penalize scene context changes—only visual feature similarity.
+**Error:** Attempting to align state (try 2/3)...
 
-### 2. Segment Start Frame Selection Logic
+### Failure 3: State Mismatch
 
-**Expected:** Extract first frame from segment 0 start (frame 0)
+**Error:** Attempting to align state (try 3/3)...
 
-**Actual:** System selected frame ~432 (segment 1 start)
+### Failure 4: State Mismatch
 
-**Root Mechanism:**
-Frame extraction occurs at segment boundary, but frame index selection appears to be drift-affected. With segment boundary at (0, 428), expected extraction: frame 0. Observed extraction: frame 432 (first frame of next segment).
+**Error:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image displays the 'downloads' folder within a file manager application. the current image shows a form for creating a new recipe within a different application. the screens are completely different and do not offer the same functionality.
 
-**Hypothesis:** 
-Step start/stop frames extracted from `step_0v_tmp_start.png` and `step_0v_tmp_stop.png`. Comparing visual delta:
-- `tmp_start.png`: Recipe list, clean UI, single recipe "cake" visible
-- `tmp_stop.png`: Same recipe list, but overlay/menu structure visible in bottom area
-- DINO annotation (`step_0v_dino.png`): Shows detections on completely different screen (empty app state)
+### Failure 5: State Mismatch
 
-**Conclusion:** Frame extraction grabbed keyframe from segment boundary discontinuity (frame 432) rather than segment start. This indicates segment start frame initialization references wrong boundary index.
+**Error:** Attempting to align state (try 1/3)...
 
-### 3. Temporal Displacement Magnitude
+### Failure 6: State Mismatch
 
-| Metric | Frame | Timestamp | Expected Step | Actual Step |
-|--------|-------|-----------|----------------|-------------|
-| **Intended Start** | 0 | 0:00 | Recipe list | - |
-| **Intended Stop** | 128 | 2:08 | Menu open | - |
-| **Actual Start** | 432 | 7:12 | Empty app + ADD RECIPE prompt | Step 4 aftermath |
-| **Displacement** | +432 frames | +7.2 sec | 3 steps forward | Video end region |
+**Error:** Attempting to align state (try 2/3)...
 
-Displacement of 7+ seconds represents complete video journey—all steps processed, workflow terminated, state reset.
+### Failure 7: State Mismatch
 
-## When This Occurs
+**Error:** Attempting to align state (try 3/3)...
 
-This issue manifests under these conditions:
+### Failure 8: State Mismatch
 
-1. **Multi-scene single segment:** CLIP threshold (0.95) too permissive for video with
-   - Rapid scene transitions (dialog opens, overlays, screens)
-   - Consistent visual chrome (status bar, navigation) across scenes
-   - Moderate resolution changes (dialog boxes, menus overlay on base screen)
+**Error:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image shows the main screen of the app with a title 'baker's percentage calculator' and a floating action button to add a new item. the current image shows a form to create a new recipe, which is a different screen within the app.
 
-2. **Stable interval threshold=1:** Requires only 1 consecutive frame above threshold to declare stability
-   - Single-frame noise or momentary visual similarity triggers segment boundary
-   - No hysteresis—adjacent frame can toggle boundary status
+## Root Cause Categorization
 
-3. **Frame-step=1 (every frame processed):** Increases chance of hitting false stable state
-   - With larger frame_step (e.g., 5), some noisy transitions skipped
-   - Step=1 means every intermediate frame evaluated
+### Phase 1: Action Segmentation
 
-4. **Low inter-frame delta tolerance:** No temporal smoothing of similarity scores
+No failures in this phase.
 
-## Impact Cascade
+### Phase 2: GUI State Comparison
 
-```
-Segmentation Error (frame 0→432 displacement)
-    ↓
-Wrong Start Frame Extracted (empty app instead of recipe list)
-    ↓
-DINO Detects UI Elements on Wrong Screen
-    ↓
-Relevant Regions Extracted from Mismatched State
-    ↓
-State Alignment Fails (recipe list ≠ empty app)
-    ↓
-Recovery Attempts All Fail (3 different swipe actions, still empty)
-    ↓
-Segment 0 Skipped Entirely (log line 159: "Skipping action")
-    ↓
-Segment 1 Processed (different workflow section)
-    ↓
-Overall Workflow Completion: 0/4 steps, Status: Incomplete
-```
+- **State Mismatch:** Attempting to align state (try 1/3)...
+- **State Mismatch:** Attempting to align state (try 2/3)...
+- **State Mismatch:** Attempting to align state (try 3/3)...
+- **State Mismatch:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image displays the 'downloads' folder within a file manager application. the current image shows a form for creating a new recipe within a different application. the screens are completely different and do not offer the same functionality.
+- **State Mismatch:** Attempting to align state (try 1/3)...
+- **State Mismatch:** Attempting to align state (try 2/3)...
+- **State Mismatch:** Attempting to align state (try 3/3)...
+- **State Mismatch:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image shows the main screen of the app with a title 'baker's percentage calculator' and a floating action button to add a new item. the current image shows a form to create a new recipe, which is a different screen within the app.
 
-## Technical Mechanism: Why Frame 432 Selected
+### Phase 3: Bug Replay
 
-**Evidence from extracted frames:**
+No failures in this phase.
 
-- `step_0v_tmp_start.png`: Recipe list with cake row, overflow menu icon visible (CORRECT state)
-- `step_0v_tmp_stop.png`: Recipe list view but with visual indicator of menu/selection overlay
-- `step_0v_dino.png`: **Entirely different screen**—empty recipe list + "Add Recipe" prompt button (WRONG state)
+## Conclusions
 
-**Interpretation:**
-- Segment 0 "start" correctly grabbed from frame ~0
-- Segment 0 "stop" correctly grabbed from frame ~428
-- But DINO inference occurred on frame from segment 1 boundary (~432)
-- Suggests frame selection logic uses segment[i+1].start instead of segment[i].start for frame extraction
+This execution demonstrates **0.0% coverage** of expected steps. The dominant failure mode is **Phase 2: GUI State Comparison**, accounting for the majority of errors. GUI state comparison failures (8) suggest mismatches between expected and actual UI state. Overall, the system failed to complete 4 of 4 steps, limiting the ability to fully replicate the bad behavior.
 
-## Reproducibility
+## TL;DR
 
-This issue is **highly reproducible** for videos exhibiting:
-- ✓ Rapid UI transitions (dialogs, menus, screens)
-- ✓ Shared visual features across scenes (app chrome, status bar)
-- ✓ CLIP encoder bias toward semantic similarity over temporal coherence
-- ✓ segment_step=1 in config
-- ✓ stable_sim_threshold ≥ 0.95
-
-**Test case already exists:** This exact video (baker's percentage calculator bad run) demonstrates the issue.
-
-## Recommended Fixes
-
-1. **Increase stable_interval_threshold:** Require 3+ consecutive frames above threshold (temporal hysteresis)
-2. **Lower CLIP threshold:** Use 0.90 or 0.85 for more aggressive segmentation
-3. **Add scene-aware segmentation:** Detect dialog/overlay entrance as hard boundary
-4. **Fix frame selection:** Ensure segment start frame uses segment[i].start, not segment[i+1].start
-5. **Temporal smoothing:** Apply median filter to similarity scores before thresholding
-
-## Conclusion
-
-DINO detection failure stemmed from **upstream segmentation algorithm miscalibration**, not DINO itself. CLIP encoder treated multi-step scene transitions as single visual stability region due to permissive threshold and low temporal sensitivity. Frame extraction subsequently grabbed boundary frame from next segment, displacing analysis by +7.2 seconds and rendering entire workflow verification invalid.
-
----
-
-**Generated:** 2026-06-01  
-**App:** Baker's Percentage Calculator  
-**Video:** bad-quality.mp4  
-**Algorithm:** CLIP-based segmentation  
-**Severity:** High (complete workflow failure)
+- ✗ 4/4 steps failed (coverage: 0.0%)
+- Dominant issue: Phase 2: GUI State Comparison
+- Critical events: 0 errors, 8 warnings
+- **Verdict:** FAIL — Significant execution gaps prevent behavior replication

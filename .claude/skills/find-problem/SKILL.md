@@ -11,25 +11,36 @@ Compare truth value video execution with ViBR run log execution. Identify missin
 
 When invoked, Claude will perform ground-truth analysis:
 
-1. **Read config** from `approach/input/config.yml` — extract `run.app_name`, `run.quality` (good|bad), `model.gemini_model`
+0. **Parse invocation args** — if the skill was invoked with positional args (e.g. `/find-problem homemedkit1 batterytemperaturedisplay1`):
+   - Treat each arg as an `app_name` to process
+   - Use `quality` from `approach/input/config.yml` for all apps (shared setting)
+   - If no args provided → fall back to reading `app_name` from config (existing behavior, run single app)
 
-2. **Locate or generate ground truth**:
+**LOOP:** If multiple app_names were parsed in Step 0, repeat Steps 1–6 for each app sequentially.
+Write one report per app: `apps/{app_name}-{gemini_model}/{quality}-run-issue.md`
+
+1. **Read config** from `approach/input/config.yml` — extract `run.quality` (good|bad), `model.gemini_model`. Use `app_name` from Step 0 arg (or fallback to config if no args).
+
+2. **Locate or generate ground truth** — MANDATORY ARTIFACT:
 
    **2a. Check for existing truth JSON**:
-   - Look for pre-existing truth value file:
-     - `apps/{app_name}-{gemini_model}/{quality}-truth.json` (truth for the run video being analyzed)
-   - If found → use it and skip to Step 3
+   - Look for pre-existing truth value file: `apps/{app_name}-{gemini_model}/{quality}-truth.json`
+   - If found → verify it contains all required fields (video_summary, steps[], detected_action_types[], overall_flow[], human_readable_step_summary[])
+   - If valid → proceed to Step 3
 
-   **2b. Generate truth value if missing (Claude vision analysis)**:
-   - If no truth JSON exists, generate from the run video using Claude's vision
-   - Locate run video: `apps/{app_name}-{gemini_model}/{quality}-video.mp4`
-   - If missing: error out with "No {quality}-video.mp4 found for {app_name}. Cannot generate truth value."
-   - Extract frames at 1fps using ffmpeg: `ffmpeg -i {quality}-video.mp4 -vf fps=1 /tmp/{app_name}_{quality}_truth_frames/frame_%04d.png`
+   **2b. Generate truth value if missing (Claude vision analysis) — REQUIRED IF 2a FAILS**:
+   - If no valid truth JSON exists, generate from video using Claude's vision (non-negotiable)
+   - Locate video: `apps/{app_name}-{gemini_model}/{quality}-video.mp4`
+   - If missing: ERROR — "No {quality}-video.mp4 found for {app_name}. Cannot generate truth value."
+   - Extract frames at 1fps: `ffmpeg -i {quality}-video.mp4 -vf fps=1 /tmp/{app_name}_{quality}_truth_frames/frame_%04d.png`
    - Read extracted frames using Claude Code's image vision capability
-   - Apply **Truth Value Generation Prompt** (see section below) to analyze the video frames
-   - Claude generates structured JSON output matching the required schema
+   - Analyze frames sequentially to identify: user actions, screen transitions, timing, UI elements
+   - Apply **Truth Value Generation Prompt** (section below) to analyze the video frames
+   - Generate structured JSON output matching required schema
+   - **CHECKPOINT: Verify JSON contains all required fields before saving**
    - Save output as `apps/{app_name}-{gemini_model}/{quality}-truth.json`
-   - Truth JSON must contain: video_summary, steps[], detected_action_types[], overall_flow[], human_readable_step_summary[]
+   - Required fields (mandatory): video_summary, steps[], detected_action_types[], overall_flow[], human_readable_step_summary[]
+   - **VALIDATION: Do NOT proceed to Step 3 until truth JSON exists and is valid**
    - Proceed to Step 3 using this generated truth file
 
 3. **Locate ViBR run artifacts**:
@@ -74,7 +85,126 @@ When invoked, Claude will perform ground-truth analysis:
      - Masked intermediate transition: keywords "input", "masked", "password", "pin"
      - Semantic gap (default): if no keywords match
 
+---
+
+## Problem Category Taxonomy
+
+When classifying failures in Step 5, use this taxonomy to assign:
+- `category_phase` — the phase label
+- `category_name` — numbered sub-category (e.g. "1.1. Video Input Processing")
+- `category_issue` — the specific issue string from the list below
+
+### Phase 1: Action Segmentation
+
+#### 1.1. Video Input Processing
+- Compression artifacts alter GUI appearance
+- Frame drops or variable frame rates
+- Motion blur during scrolling
+- Screen recording quality differences
+- Y-channel loses color information that may be semantically important
+
+#### 1.2. CLIP Embedding
+- Embeddings miss subtle UI changes
+- CLIP not trained specifically on mobile GUIs
+- Similar screens mapped too closely
+- Different themes/devices produce embedding drift
+- Small interactive changes may be ignored
+
+#### 1.3. Similarity Computation
+- Fixed threshold (0.95) may not generalize
+- False transitions from animations
+- Missed transitions during subtle state changes
+- Different apps require different thresholds
+- Noise accumulates over long recordings
+
+#### 1.4. Scene Detection
+- Incorrect grouping of frames
+- One action split into multiple segments
+- Multiple actions merged together
+- Scroll actions produce unstable boundaries
+- Timing sensitivity (±3 frames may be insufficient)
+
+### Phase 2: GUI State Comparison
+
+#### 2.5. Region Detection (GroundingDINO)
+- Missed interactive elements
+- Incorrect bounding boxes
+- Prompt sensitivity
+- Over-detection of non-interactive elements
+- Poor performance on custom UI components
+
+#### 2.6. ROI Selection (GPT-4o)
+- Wrong clicked element identified
+- Ambiguous causal attribution
+- Nearby elements confused
+- Multiple simultaneous UI changes
+- Model reasoning inconsistencies
+
+#### 2.7. State Consistency Check (GPT-4o)
+- False positives ("same state" when not)
+- False negatives ("different state" when equivalent)
+- Functional equivalence difficult to judge
+- Hidden state differences undetectable visually
+- Hallucinated UI relationships
+
+#### 2.8. UI Hierarchy Parsing
+- Incomplete XML extraction
+- Dynamic elements missing from hierarchy
+- Accessibility metadata unavailable
+- Coordinates inconsistent across devices
+- Custom-rendered widgets poorly represented
+
+### Phase 3: Bug Replay on Device
+
+#### 3.9. Action Space Definition
+- Action vocabulary too limited
+- Missing gestures (pinch, swipe, long press, drag)
+- Complex actions poorly represented
+- Context-dependent actions ignored
+
+#### 3.10. GUI Perception
+- Incorrect screen understanding
+- Occluded elements
+- Visual grounding errors
+- Annotation ambiguity
+- Screen clutter overwhelms model
+
+#### 3.11. Action Inference (GPT-4o)
+- Wrong next action predicted
+- Exploration strategy inefficient
+- Error recovery loops
+- Ambiguous replay decisions
+- Model drift during long replay sequences
+
+#### 3.12. Action Execution
+- ADB timing issues
+- Device latency differences
+- Tap coordinates become invalid
+- Keyboard/input synchronization failures
+- OS permission dialogs interrupt execution
+
+### Misc
+
+For failures that don't map to any phase above:
+
+- `category_phase`: Misc
+- `category_name`: Misc — {short descriptive name}
+- `category_issue`: {description of the specific issue observed}
+
+---
+
 6. **Write academic report** as `apps/{app_name}-{gemini_model}/{quality}-run-issue.md`:
+   
+   **Log Summary step (do first):**
+   - Read the full `{quality}-run.log`
+   - Find the line containing `Loading GroundingDINO model` — start from the NEXT non-httpx, non-google_genai.models line after it
+   - Filter out all lines with `[httpx]` or `[google_genai.models]` in the module field
+   - Build a timeline table from remaining lines: extract timestamp, module, and event summary
+   - Write a 2–4 sentence Interpretation paragraph: what happened, where the first failure was, what cascaded from that
+   - Place this as the **first section** of the report (before Executive Summary)
+   
+   **Report sections:**
+   - Log Summary: extracted timeline of events from log, with interpretation
    - Executive Summary: gap analysis (expected vs actual)
    - Ground Truth vs Execution: side-by-side step comparison
    - Video vs Log Comparison (if video processed): timeline of frames vs log events, highlight gaps
@@ -85,119 +215,24 @@ When invoked, Claude will perform ground-truth analysis:
 
 ## Report Structure
 
-```markdown
-# ViBR Run Analysis: {app_name} ({quality} run)
+File: `apps/{app_name}-{gemini_model}/{quality}-run-issue.md`
 
-## Executive Summary
+Sections (in order):
 
-**Ground Truth:** {steps_expected} expected steps
-**Actually Executed:** {steps_executed} steps
-**Gap:** {steps_missing} steps missing ({coverage}% execution rate)
-
-The {quality} run fell short of ground truth by {steps_missing} step(s). Analysis identifies systematic failures in GUI state comparison and action segmentation.
-
----
-
-## Ground Truth vs Execution Log
-
-| Step # | Expected Action | Executed | Status | Issue Category |
-|--------|-----------------|----------|--------|-----------------|
-| 0 | {action} | ✓ | Success | — |
-| 1 | {action} | ✗ | Failed | {Category Name} |
-| ... | ... | ... | ... | ... |
-
----
-
-## Video vs Log Comparison (if applicable)
-
-Compares video timeline frames to log events:
-
-| Frame Range | Segment | Log Shows | Video Shows | Gap? |
-|-------------|---------|-----------|-------------|------|
-| 0–100 | Seg 0 | Wait for data | Numeric keypad visible (user typing) | ⚠️ YES |
-| 200–300 | Seg 1 | Action executed (tap) | Post-tap transition | ✓ Aligned |
-| ... | ... | ... | ... | ... |
-
-**Key Observations:**
-- Hidden actions: steps user took manually but ViBR didn't detect
-- Timing gaps: log shows `wait` while video shows user activity
-- State mismatches: log says "state mismatch" but video shows what actually happened
-
----
-
-## Detailed Failure Analysis
-
-### Step {N}: {Expected Action} — FAILED
-
-**Expected behavior (ground truth):**
-> {action description from truth value}
-
-**What the log shows:**
-> {actual log entry}
-
-**Mismatch reason:**
-> {extracted from log warning}
-
-**Root cause:** {Category} — {explanation}
-- Evidence: {relevant log lines or artifact data}
-- Why it matters: {impact on subsequent steps, if cascading}
-
-...
-
----
-
-## Root Cause Categorization
-
-### Stage 1: Action Segmentation ({count} failures)
-- Over-segmentation: {count}
-- Dynamic element false boundary: {count}
-
-### Stage 2: GUI State Comparison ({count} failures)
-- Resolution/layout mismatch: {count}
-- Cosmetic theme difference: {count}
-- Transient artifact overlay: {count}
-- Screen recording artifact: {count}
-- Scroll-induced element shift: {count}
-- Dynamic/session-specific content: {count}
-
-### Stage 3: Bug Replay on Device ({count} failures)
-- Semantic gap: {count}
-- Masked intermediate transition: {count}
-
----
-
-## Conclusions
-
-The {quality} run achieved {coverage}% execution of ground truth. Primary failure mode: {dominant category}. This suggests {academic interpretation of underlying limitation}.
-
-The gap of {steps_missing} steps represents {interpretation of severity and implications}.
-
----
-
-## TL;DR — Why It Failed/Succeeded
-
-**Success reasons (if applicable):**
-- All segments detected and processed correctly
-- UI state matching aligned between video and device
-- ViBR action inference worked as expected
-- No critical state mismatches
-
-**Failure reasons (if applicable):**
-- {dominant_category}: {one-line reason}
-  - {specific evidence from log or video}
-  - {impact: what prevented execution}
-- {secondary_category}: {one-line reason}
-  - {specific evidence}
-  - {impact}
-
-**Bottom line:** {executive summary in 1-2 sentences: what broke and why. e.g., "ViBR detected empty data state and correctly skipped action, but video shows user manually entered data—indicates missing UI element detection or form interaction logic."}
-```
+1. **Log Summary** — timeline table (Time | Module | Event) filtered to exclude `[httpx]` and `[google_genai.models]` lines, starting after `Loading GroundingDINO model`. End with 2–4 sentence Interpretation paragraph.
+2. **Executive Summary** — steps_expected vs steps_executed, gap count, coverage %.
+3. **Ground Truth vs Execution Log** — table: Step# | Expected Action | Executed ✓/✗ | Status | Issue Category
+4. **Video vs Log Comparison** *(if video processed)* — table: Frame Range | Segment | Log Shows | Video Shows | Gap?. Note hidden actions, timing gaps, state mismatches.
+5. **Detailed Failure Analysis** — per failed step: expected behavior, log entry, mismatch reason, root cause category + evidence + cascade impact.
+6. **Root Cause Categorization** — group failures by Stage 1/2/3 sub-categories with counts.
+7. **Conclusions** — academic tone: coverage %, dominant failure mode, underlying limitation.
+8. **TL;DR** — bullet success/failure reasons + one-sentence bottom line.
 
 ---
 
 ## Truth Value Generation Prompt
 
-When generating a truth value from a good-quality video (Step 2b), use the following prompt and schema:
+When generating a truth value from video (Step 2b), use the following prompt and schema:
 
 ### Prompt
 
@@ -205,114 +240,25 @@ Analyze the uploaded Android app screen recording and generate a structured JSON
 Break the video into meaningful interaction steps. Each step should describe what screen is visible,
 what the user does, what changes on screen, and the likely user intent.
 
-### Required JSON Format
+### Required JSON Schema
 
-```json
-{
-  "video_summary": {
-    "app_name": "",
-    "overall_goal": "",
-    "device_type": "Android",
-    "description": ""
-  },
-  "steps": [
-    {
-      "step_number": 1,
-      "timestamp_start": "00:00",
-      "timestamp_end": "00:00",
-      "screen_name": "",
-      "what_screen_is_visible": "",
-      "visible_ui_elements": [],
-      "user_gesture": "",
-      "target_element": "",
-      "system_response": "",
-      "navigation_change": "",
-      "data_entered": "",
-      "visual_feedback": "",
-      "intent_task": "",
-      "confidence": "high | medium | low"
-    }
-  ],
-  "detected_action_types": [],
-  "overall_flow": [],
-  "human_readable_step_summary": []
-}
-```
+Top-level fields (all mandatory):
+- `video_summary`: `{app_name, overall_goal, device_type: "Android", description}`
+- `steps[]`: one object per interaction step (see fields below)
+- `detected_action_types[]`: list of action vocab terms used
+- `overall_flow[]`: high-level flow summary list
+- `human_readable_step_summary[]`: plain-English summary per step, 1:1 with steps[]
 
-### Analysis Instructions
-
-- Use timestamps for every meaningful user action or screen change.
-- Do not invent app names, button names, text, or actions that are not visible.
-- If any text or UI element is unclear, write "unclear" instead of guessing.
-- Group very small repeated actions into one step when they serve the same purpose.
-- Use simple action names from the action vocabulary (below).
-- Focus only on visible Android app UI behavior.
-- Do not assume background logic, user identity, account details, or hidden app behavior.
-- For intent, infer only from the visible action and screen context.
-- Return only valid JSON. Do not include markdown, comments, or explanation outside the JSON.
+Step fields: `step_number`, `timestamp_start`, `timestamp_end`, `screen_name`, `what_screen_is_visible`, `visible_ui_elements[]`, `user_gesture` (from vocab), `target_element`, `system_response`, `navigation_change` ("none" if absent), `data_entered` ("" if none), `visual_feedback`, `intent_task`, `confidence` (high|medium|low)
 
 ### Action Vocabulary
 
-```
-tap
-double_tap
-long_press
-scroll_up
-scroll_down
-swipe_left
-swipe_right
-type_text
-delete_text
-open_keyboard
-close_keyboard
-press_back
-press_home
-open_dialog
-close_dialog
-submit
-select_item
-toggle
-drag
-wait
-screen_transition
-```
+`tap`, `double_tap`, `long_press`, `scroll_up`, `scroll_down`, `swipe_left`, `swipe_right`, `type_text`, `delete_text`, `open_keyboard`, `close_keyboard`, `press_back`, `press_home`, `open_dialog`, `close_dialog`, `submit`, `select_item`, `toggle`, `drag`, `wait`, `screen_transition`
 
-### Field Guidelines
+### Analysis Rules
 
-- **app_name:** Name of the app if visible. If not visible, use "unclear".
-- **overall_goal:** The likely purpose of the full user flow based on visible actions.
-- **description:** A short summary of what happens in the recording.
-- **screen_name:** Name of the current screen if visible or reasonably clear.
-- **what_screen_is_visible:** Plain description of the screen shown.
-- **visible_ui_elements:** List of visible buttons, menus, tabs, fields, cards, dialogs, icons, or labels.
-- **user_gesture:** One action from the action vocabulary.
-- **target_element:** The UI element the user interacted with.
-- **system_response:** What the app did after the action.
-- **navigation_change:** Describe screen change, dialog open/close, drawer open/close, or write "none".
-- **data_entered:** Any typed or selected data. If none, use an empty string.
-- **visual_feedback:** Any visible feedback such as highlight, loading, popup, animation, selected state, or error.
-- **intent_task:** The likely reason the user performed the action.
-- **confidence:** Use "high" when clearly visible, "medium" when partially inferred, and "low" when uncertain.
-
-### Human-Readable Summary Requirement
-
-At the end of the JSON, include a field called `human_readable_step_summary`.
-This must be a list of simple plain-English step descriptions.
-Each item should summarize the matching detailed step in a way a non-technical person can understand.
-
-Example format:
-```
-"Step 1: The app opens on the main screen and shows the available options.",
-"Step 2: The user taps a button to open the next screen.",
-"Step 3: The user scrolls down to view more content."
-```
-
-Each summary item should have a matching detailed step in the steps[] array.
-
-### Output Requirements
-
-- The final response must be valid JSON only.
-- Do not wrap the JSON in markdown.
-- Do not add explanations before or after the JSON.
-- Make sure every detailed step has a matching simple summary in `human_readable_step_summary`.
-```
+- Timestamps for every meaningful action or screen change.
+- Never invent names/text/actions not visible — write "unclear" if unsure.
+- Group tiny repeated actions serving same purpose into one step.
+- Focus only on visible Android UI; do not assume hidden logic or identity.
+- Output: valid JSON only. No markdown wrapper, no explanation outside JSON.

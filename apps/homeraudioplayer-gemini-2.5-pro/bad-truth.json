@@ -1,0 +1,138 @@
+{
+  "video_summary": {
+    "app_name": "homeraudioplayer",
+    "overall_goal": "Navigate audiobook collection and control playback",
+    "device_type": "Android",
+    "description": "User starts playing an audiobook (Alice's Adventures in Wonderland), interacts with playback controls in expanded UI mode, accesses menu, browses book collection, and switches to different audiobook (Hamlet)"
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "00:00",
+      "timestamp_end": "00:02",
+      "screen_name": "Audiobook Player - Stopped",
+      "what_screen_is_visible": "Dark audiobook player screen showing Alice's Adventures in Wonderland with a large green play button in the center. Minimal UI (only play button visible).",
+      "visible_ui_elements": [
+        "Book title: Alice's Adventures in Wonderland",
+        "Green play button (center, large)",
+        "Status bar (top)",
+        "Progress slider (bottom)"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Green play button",
+      "system_response": "Audio playback initiates. UI expands to show additional controls.",
+      "navigation_change": "Stays on player screen, UI mode transitions",
+      "data_entered": "",
+      "visual_feedback": "Play button changes state; expanded control UI appears",
+      "intent_task": "Start audiobook playback",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "00:02",
+      "timestamp_end": "00:08",
+      "screen_name": "Audiobook Player - Expanded Controls",
+      "what_screen_is_visible": "Expanded playback control interface with volume controls (speaker icons), forward/backward skip buttons (blue arrows), rewind time buttons (30s, 1m circles), and red stop button (large square in center).",
+      "visible_ui_elements": [
+        "Volume control icons (yellow speakers at top)",
+        "Skip forward/backward buttons (blue arrows)",
+        "Rewind buttons (30s and 1m timers in circles)",
+        "Red stop button (large, center-bottom)",
+        "Progress slider (bottom)"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Red stop button",
+      "system_response": "Audio playback stops. Controls remain visible.",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Red stop button highlights on tap; audio playback ceases",
+      "intent_task": "Stop current audiobook playback",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "00:08",
+      "timestamp_end": "00:12",
+      "screen_name": "Menu Navigation",
+      "what_screen_is_visible": "Menu screen appears with list of options (scrollable). Menu items visible include settings, playback options, library navigation, and system menu items. Dark theme with light text.",
+      "visible_ui_elements": [
+        "Menu title (top, unclear text)",
+        "Menu items (list of 8+ options)",
+        "Settings icon (gear, visible on items)",
+        "Scroll indicator (right edge)",
+        "Back/close option (implied)"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Menu trigger (likely from expanded UI)",
+      "system_response": "Menu screen slides into view from bottom or replaces player UI.",
+      "navigation_change": "Transition from player to menu screen",
+      "data_entered": "",
+      "visual_feedback": "Menu fades/slides in with visible list of options",
+      "intent_task": "Access app menu or settings",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "00:12",
+      "timestamp_end": "00:18",
+      "screen_name": "Menu - Scrolling",
+      "what_screen_is_visible": "Same menu screen, user scrolls through available menu items. Multiple options visible including playback settings, library options, and system preferences.",
+      "visible_ui_elements": [
+        "Menu list (scrollable)",
+        "Multiple menu items with icons (gears, folders, sliders)",
+        "Scroll position indicator",
+        "System status bar (top)"
+      ],
+      "user_gesture": "scroll_down",
+      "target_element": "Menu list area",
+      "system_response": "Menu scrolls to reveal additional options below.",
+      "navigation_change": "none (same menu, different scroll position)",
+      "data_entered": "",
+      "visual_feedback": "List scrolls; new items appear at bottom, items disappear at top",
+      "intent_task": "Browse menu options to find desired setting or action",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "00:18",
+      "timestamp_end": "00:23",
+      "screen_name": "Audiobook Player - New Book (Hamlet)",
+      "what_screen_is_visible": "Player returns to main audiobook player screen, now showing different audiobook title 'Hamlet'. Green play button visible (same layout as step 1, different book).",
+      "visible_ui_elements": [
+        "Book title: Hamlet",
+        "Green play button (center, large)",
+        "Status bar (top)",
+        "Progress slider (bottom)",
+        "Additional controls icons (top-right, partial)"
+      ],
+      "user_gesture": "back",
+      "target_element": "Back button or menu close action",
+      "system_response": "Menu closes, returns to player screen showing new audiobook (Hamlet instead of Alice's Adventures).",
+      "navigation_change": "Menu → Player screen; book changed in collection",
+      "data_entered": "",
+      "visual_feedback": "Menu fades out; player screen appears with new title displayed",
+      "intent_task": "Return from menu to main player; user has selected new audiobook to play",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "scroll_down",
+    "back"
+  ],
+  "overall_flow": [
+    "User opens audiobook player with Alice's Adventures in Wonderland (stopped state)",
+    "Taps play button to start audio; expanded control UI appears",
+    "Taps stop button to pause playback",
+    "Accesses menu (likely from expanded UI or back button)",
+    "Scrolls through menu options",
+    "Returns to player; audiobook changed to Hamlet"
+  ],
+  "human_readable_step_summary": [
+    "Step 1: The audiobook player opens showing Alice's Adventures in Wonderland with a large green play button.",
+    "Step 2: User taps the play button. Audiobook starts and expanded controls appear (volume, skip, rewind, and stop buttons).",
+    "Step 3: User taps the red stop button. Audio playback stops. A menu screen appears.",
+    "Step 4: User scrolls through the menu to browse available options.",
+    "Step 5: User returns from menu to the player. A different audiobook (Hamlet) is now selected and ready to play."
+  ]
+}

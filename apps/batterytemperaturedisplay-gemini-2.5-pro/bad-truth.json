@@ -1,0 +1,172 @@
+{
+  "video_summary": {
+    "app_name": "Battery Temperature Display",
+    "overall_goal": "User interacts with the Battery Temperature Display app to view device battery temperature and opens navigation drawer",
+    "device_type": "Android",
+    "description": "The user launches the Battery Temperature Display app which shows current battery temperature (18.5°C), then opens an input keyboard to interact with numeric keys, and finally opens the app's navigation drawer."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "00:00",
+      "timestamp_end": "00:01",
+      "screen_name": "App Launch",
+      "what_screen_is_visible": "Black screen during app initialization",
+      "visible_ui_elements": [],
+      "user_gesture": "wait",
+      "target_element": "none",
+      "system_response": "App is loading",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Black screen, no UI elements visible",
+      "intent_task": "App startup",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "00:01",
+      "timestamp_end": "00:02",
+      "screen_name": "Main Display Screen",
+      "what_screen_is_visible": "Battery Temperature Display showing current temperature reading of 18.5°C with orange battery icon at top",
+      "visible_ui_elements": [
+        "Battery icon (orange)",
+        "Temperature display (18.5 °C)",
+        "Status text (unclear content below temperature)",
+        "Bottom navigation or info cards"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Temperature display area or input field",
+      "system_response": "Keyboard opens for input",
+      "navigation_change": "Keyboard appears from bottom",
+      "data_entered": "",
+      "visual_feedback": "none",
+      "intent_task": "Trigger keyboard input",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "00:02",
+      "timestamp_end": "00:03",
+      "screen_name": "Keyboard Input",
+      "what_screen_is_visible": "Numeric keyboard overlay visible on lower half of screen, main app UI visible above",
+      "visible_ui_elements": [
+        "Numeric keypad (0-9 buttons)",
+        "Blue 'Send' or 'OK' button on right side of keyboard",
+        "Battery Temperature Display above keyboard"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Numeric key (appears to be multiple digit entry)",
+      "system_response": "Keyboard remains open, user continues typing",
+      "navigation_change": "none",
+      "data_entered": "Numeric input (multiple digits)",
+      "visual_feedback": "Key highlight/press feedback",
+      "intent_task": "Enter numeric value",
+      "confidence": "high"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "00:03",
+      "timestamp_end": "00:08",
+      "screen_name": "Keyboard Input Continuation",
+      "what_screen_is_visible": "Numeric keyboard remains visible, multiple key presses occurring",
+      "visible_ui_elements": [
+        "Numeric keypad",
+        "Blue send/OK button",
+        "Battery Temperature Display (temperature still shows 18.5°C)"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Multiple numeric keys",
+      "system_response": "Keyboard processes multiple taps, no immediate visible change to displayed temperature",
+      "navigation_change": "none",
+      "data_entered": "Numeric sequence (multi-digit entry)",
+      "visual_feedback": "Individual key press feedback, keyboard remains open",
+      "intent_task": "Continue numeric input",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "00:08",
+      "timestamp_end": "00:09",
+      "screen_name": "Keyboard Input with Notification",
+      "what_screen_is_visible": "Numeric keyboard visible with orange toast/notification appearing near bottom center",
+      "visible_ui_elements": [
+        "Numeric keypad",
+        "Orange notification toast (text unclear)",
+        "Blue send button"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Numeric key or send button area",
+      "system_response": "System shows notification feedback (orange toast), likely indicating input status or validation message",
+      "navigation_change": "Toast notification appears",
+      "data_entered": "Final numeric entry or send action",
+      "visual_feedback": "Orange toast notification",
+      "intent_task": "Send input or receive validation feedback",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 6,
+      "timestamp_start": "00:09",
+      "timestamp_end": "00:10",
+      "screen_name": "Keyboard Closing / Temperature Update",
+      "what_screen_is_visible": "Keyboard has closed, main Battery Temperature Display screen visible with updated temperature reading of 19.0°C",
+      "visible_ui_elements": [
+        "Battery icon (orange)",
+        "Temperature display (19.0 °C - updated from 18.5°C)",
+        "Status information below temperature",
+        "Bottom navigation or info cards"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "Keyboard close / screen dismiss",
+      "system_response": "Temperature display updates to new value (19.0°C), keyboard dismissed",
+      "navigation_change": "Keyboard closes, returns to main display",
+      "data_entered": "",
+      "visual_feedback": "Temperature value changed, keyboard dismissed",
+      "intent_task": "Input completed, view updated temperature",
+      "confidence": "high"
+    },
+    {
+      "step_number": 7,
+      "timestamp_start": "00:10",
+      "timestamp_end": "00:17",
+      "screen_name": "Navigation Drawer Open",
+      "what_screen_is_visible": "Navigation drawer opened from left side showing app menu with multiple options/sections (appears to show app information, settings, or about pages)",
+      "visible_ui_elements": [
+        "Navigation drawer header",
+        "Menu items/options (text unclear but multiple sections visible)",
+        "App description or information text",
+        "Multiple cards or sections in drawer (appears to show different app screens or settings)"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Menu icon or drawer trigger on main screen",
+      "system_response": "Navigation drawer slides open from left side",
+      "navigation_change": "Drawer open",
+      "data_entered": "",
+      "visual_feedback": "Drawer animation, main content partially visible behind drawer",
+      "intent_task": "Access app navigation menu",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "wait",
+    "tap",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "App launches and initializes",
+    "Main Battery Temperature Display screen shown (18.5°C)",
+    "User taps to open numeric keyboard input",
+    "User enters numeric sequence via keyboard",
+    "System displays notification feedback (orange toast)",
+    "Keyboard closes and temperature updates to 19.0°C",
+    "User opens app navigation drawer to view menu options"
+  ],
+  "human_readable_step_summary": [
+    "Step 1: The app is launching and the screen is black as it initializes.",
+    "Step 2: The Battery Temperature Display app opens showing the current temperature of 18.5°C with an orange battery icon.",
+    "Step 3: The user taps on the temperature area to open a numeric keyboard for input.",
+    "Step 4: The user continues tapping multiple numeric keys to enter a number sequence into the keyboard.",
+    "Step 5: The user completes input and a notification appears showing feedback from the app (orange notification toast).",
+    "Step 6: The keyboard closes and the main display returns, now showing an updated temperature of 19.0°C.",
+    "Step 7: The user opens the app's navigation drawer by tapping the menu button, showing various app options and information."
+  ]
+}

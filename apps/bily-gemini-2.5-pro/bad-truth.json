@@ -1,0 +1,100 @@
+{
+  "video_summary": {
+    "app_name": "bily",
+    "overall_goal": "Reset all expenses and clear the bill balance",
+    "device_type": "Android",
+    "description": "User navigates Bily Global Bill app to reset expenses. App shows $111 initial balance, user attempts reset workflow."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": 0,
+      "timestamp_end": 2,
+      "screen_name": "MainActivity",
+      "what_screen_is_visible": "Global Bill showing $111.00",
+      "visible_ui_elements": [
+        "Total amount",
+        "Balance Per User",
+        "Expenses"
+      ],
+      "user_gesture": "wait",
+      "target_element": "App ready",
+      "system_response": "Initial state loaded",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "None",
+      "intent_task": "View state",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": 2,
+      "timestamp_end": 4,
+      "screen_name": "MainActivity",
+      "what_screen_is_visible": "User interacts with menu",
+      "visible_ui_elements": [
+        "Menu options"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Menu button",
+      "system_response": "Menu appears",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Menu visible",
+      "intent_task": "Access reset",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": 4,
+      "timestamp_end": 6,
+      "screen_name": "Dialog",
+      "what_screen_is_visible": "Confirmation dialog for reset",
+      "visible_ui_elements": [
+        "Dialog, Cancel, Reset buttons"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Reset button",
+      "system_response": "Reset initiated",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Dialog interaction",
+      "intent_task": "Confirm reset",
+      "confidence": "high"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": 6,
+      "timestamp_end": 13,
+      "screen_name": "MainActivity",
+      "what_screen_is_visible": "Post-reset state or transition",
+      "visible_ui_elements": [
+        "App state after reset"
+      ],
+      "user_gesture": "wait",
+      "target_element": "Final state",
+      "system_response": "Reset completes",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Screen updates",
+      "intent_task": "Complete workflow",
+      "confidence": "medium"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "wait"
+  ],
+  "overall_flow": [
+    "View bill",
+    "Open menu",
+    "Reset expenses",
+    "Return to main"
+  ],
+  "human_readable_step_summary": [
+    "Initial bill state",
+    "Access menu",
+    "Confirm reset",
+    "Reset completes"
+  ]
+}

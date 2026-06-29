@@ -1,0 +1,99 @@
+{
+  "video_summary": {
+    "app_name": "binaryeye",
+    "overall_goal": "Test QR code scanner functionality and settings",
+    "device_type": "Android",
+    "description": "User interacts with BinaryEye scanner app, navigates between scanner and settings screens."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": 0,
+      "timestamp_end": 2,
+      "screen_name": "ScannerActivity",
+      "what_screen_is_visible": "Scanner camera view",
+      "visible_ui_elements": [
+        "Camera",
+        "Controls"
+      ],
+      "user_gesture": "wait",
+      "target_element": "Ready",
+      "system_response": "Initialized",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "None",
+      "intent_task": "View scanner",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": 2,
+      "timestamp_end": 4,
+      "screen_name": "ScannerActivity",
+      "what_screen_is_visible": "Menu accessed",
+      "visible_ui_elements": [
+        "Menu options"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Menu",
+      "system_response": "Menu open",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Menu visible",
+      "intent_task": "Access options",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": 4,
+      "timestamp_end": 10,
+      "screen_name": "SettingsActivity",
+      "what_screen_is_visible": "Settings screen",
+      "visible_ui_elements": [
+        "Settings options"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "Settings",
+      "system_response": "Loaded",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Settings shown",
+      "intent_task": "View settings",
+      "confidence": "high"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": 10,
+      "timestamp_end": 15,
+      "screen_name": "ScannerActivity",
+      "what_screen_is_visible": "Back to scanner",
+      "visible_ui_elements": [
+        "Camera view"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "Scanner",
+      "system_response": "Returned",
+      "navigation_change": "back",
+      "data_entered": "",
+      "visual_feedback": "Camera visible",
+      "intent_task": "Resume scanning",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "Scanner",
+    "Menu",
+    "Settings",
+    "Back to Scanner"
+  ],
+  "human_readable_step_summary": [
+    "Scanner active",
+    "Access menu",
+    "View settings",
+    "Return to scanner"
+  ]
+}

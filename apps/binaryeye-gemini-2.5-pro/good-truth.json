@@ -1,0 +1,137 @@
+{
+  "video_summary": {
+    "app_name": "binaryeye",
+    "overall_goal": "Navigate QR code scanner and access app settings",
+    "device_type": "Android",
+    "description": "User launches BinaryEye QR code scanner app, views camera interface, navigates to Settings to review options like ignore duplicates, clipboard forwarding, and Bluetooth features."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": 0,
+      "timestamp_end": 2,
+      "screen_name": "ScannerActivity",
+      "what_screen_is_visible": "QR code scanner camera view with checkered pattern (no valid code detected)",
+      "visible_ui_elements": [
+        "Camera feed",
+        "Scan code title",
+        "Refresh icon",
+        "Plus icon",
+        "Menu icon",
+        "Flash button",
+        "Zoom slider"
+      ],
+      "user_gesture": "wait",
+      "target_element": "Camera ready",
+      "system_response": "App initializes scanner",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "None",
+      "intent_task": "Observe scanner state",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": 2,
+      "timestamp_end": 4,
+      "screen_name": "ScannerActivity",
+      "what_screen_is_visible": "User accesses menu to navigate to settings",
+      "visible_ui_elements": [
+        "Menu button",
+        "Settings option"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Menu/options button",
+      "system_response": "Menu opens",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Menu visible",
+      "intent_task": "Access settings",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": 4,
+      "timestamp_end": 8,
+      "screen_name": "SettingsActivity",
+      "what_screen_is_visible": "Settings screen showing configuration options",
+      "visible_ui_elements": [
+        "Settings title",
+        "Save recognized codes toggle",
+        "Ignore duplicates option",
+        "Codes to exclude from history",
+        "Put into clipboard toggle",
+        "Forwarding section",
+        "URL to forward to",
+        "Request type",
+        "Forward scans with Bluetooth"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "Settings screen",
+      "system_response": "Settings page loaded",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Settings displayed",
+      "intent_task": "Review app configuration",
+      "confidence": "high"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": 8,
+      "timestamp_end": 12,
+      "screen_name": "SettingsActivity",
+      "what_screen_is_visible": "User reviews settings options, may toggle or scroll",
+      "visible_ui_elements": [
+        "Various toggles and options"
+      ],
+      "user_gesture": "wait",
+      "target_element": "Settings menu",
+      "system_response": "User reviews configuration",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "None",
+      "intent_task": "Examine settings",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": 12,
+      "timestamp_end": 16,
+      "screen_name": "ScannerActivity",
+      "what_screen_is_visible": "Back to scanner camera view with checkered pattern",
+      "visible_ui_elements": [
+        "Camera feed",
+        "Scanner controls",
+        "Flash button",
+        "Zoom slider"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "Scanner screen",
+      "system_response": "Navigated back to scanner",
+      "navigation_change": "back",
+      "data_entered": "",
+      "visual_feedback": "Camera view restored",
+      "intent_task": "Return to scanning",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "wait",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "1. Camera scanner initialized with no valid code",
+    "2. User opens menu",
+    "3. Navigate to Settings",
+    "4. Review app configuration options",
+    "5. Return to scanner camera view"
+  ],
+  "human_readable_step_summary": [
+    "QR code scanner ready, camera showing checkered pattern",
+    "User accesses menu options",
+    "Navigate to Settings page",
+    "Review configuration options (duplicates, clipboard, Bluetooth)",
+    "Return to scanner main screen"
+  ]
+}
