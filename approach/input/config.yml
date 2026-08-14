@@ -2,18 +2,21 @@
 # All configurable values for the automation framework
 
 # Available app_name values:
-# adaway ✓, antennapod1 ✓, antennapod2 ✓, antennapod3 ✗,
+# adaway ✓, amazefilemanager ?, amazefilemanager1 ?, amazefilemanager2 ?,
+# ankidroid1 ?, antennapod1 ✓, antennapod2 ✓, antennapod3 ✗,
 # bakerspercentagecalculator1 ✓, bakerspercentagecalculator2 ✓,
 # batterytemperaturedisplay ✓, bily ✓, binaryeye ✓,
 # bloodpressuremonitor1 ✓, bloodpressuremonitor2 ✓, bloodpressuremonitor3 ✓,
 # brethap1 ✓, brethap2 ✓, deadhash ✗,
 # homemedkit1 ✓, homemedkit2 ✓, homeraudioplayer ✓,
-# jigsaw1 ✓, jigsaw2 ✓, luxalarm1 ✗, luxalarm2 ✗,
+# jigsaw1 ✓, jigsaw2 ✓, k91 ?, k92 ?, luxalarm1 ✗, luxalarm2 ✗,
 # newpipe ✗, pantry ✗, portauthority ✗, quitter ✓, simplenotes ✓,
-# vanilla ✓, wifianalyzer1 ✓, wifianalyzer2 ✓
+# vanilla ✓, wifianalyzer1 ✓, wifianalyzer2 ✓, wordpress ?
+
+# amazefilemanager1, amazefilemanager2, ankidroid1, k91, k92, wordpress
 run:
-  app_name: "adaway"
-  quality: "good"              # "good" | "bad"
+  app_name: "k92"
+  quality: "bad"              # "good" | "bad"
 
 model:
   provider: "gemini"          # "openai" | "gemini"
