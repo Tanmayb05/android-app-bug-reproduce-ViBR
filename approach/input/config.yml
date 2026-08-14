@@ -14,9 +14,11 @@
 # vanilla ✓, wifianalyzer1 ✓, wifianalyzer2 ✓, wordpress ?
 
 # amazefilemanager1, amazefilemanager2, ankidroid1, k91, k92, wordpress
-run:
-  app_name: "k92"
-  quality: "bad"              # "good" | "bad"
+# Only the first uncommented entry is processed per run.
+runs:
+  # - bug_dir: "data/video01-amazefilemanager#2595"
+  # - bug_dir: "data/video02-amazefilemanager#2526"
+  - bug_dir: "data/video03-k92#9005"
 
 model:
   provider: "gemini"          # "openai" | "gemini"
@@ -81,7 +83,6 @@ visualization:
 paths:
   apps_root: "apps"
   temp_root: "temp"
-  video_filename_template: "{quality}-video.mp4"
 
 runtime:
   matplotlib_config_dir: "/tmp/matplotlib"

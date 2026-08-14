@@ -51,7 +51,6 @@ def test_record_llm_response_is_noop_without_active_stats():
 def test_record_llm_response_updates_active_stats():
     stats = run_stats.init_run_stats(
         app_name="demo",
-        video_quality="bad",
         provider="gemini",
         model="gemini-2.5-flash",
         algorithm="clip",
@@ -74,22 +73,22 @@ def test_record_llm_response_updates_active_stats():
     assert stats.tokens_used == 9
 
 
-def test_log_run_summary_writes_quality_prefixed_summary(tmp_path):
+def test_log_run_summary_writes_summary_json(tmp_path):
+    from run_paths import build_run_paths
+
     previous_stats = run_stats._current_stats
     stats = run_stats.init_run_stats(
         app_name="demo",
-        video_quality="bad",
         provider="gemini",
         model="gemini-2.5-flash",
         algorithm="clip",
     )
     stats.status = "complete"
+    paths = build_run_paths(tmp_path)
 
     try:
-        run_stats.log_run_summary(tmp_path)
+        run_stats.log_run_summary(paths)
     finally:
         run_stats._current_stats = previous_stats
 
-    assert (tmp_path / "bad-run-summary.json").exists()
-    assert not (tmp_path / "run_bad_summary.json").exists()
-    assert not (tmp_path / "bad_run_summary.json").exists()
+    assert (tmp_path / "summary.json").exists()

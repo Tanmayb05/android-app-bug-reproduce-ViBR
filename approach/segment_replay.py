@@ -12,8 +12,9 @@ from typing import Any, List, Optional
 from math import hypot
 
 from logger import setup_logger
-from config_loader import get_config
+from config_loader import get_config, get_active_run
 from run_stats import init_run_stats, get_run_stats, log_run_summary
+from run_paths import build_run_paths, ensure_run_dirs, validate_run_inputs
 from model_api import (
     ask_gpt_for_action_region,
     ask_gpt_state_consistency,
@@ -35,15 +36,17 @@ Supports two boundary-detection algorithms:
   - ssim : pixel-level structural similarity (via yyh_utils) — default
   - clip : CLIP embedding cosine similarity (via clip_seg)
 
-Video input: apps/<app_name>-<provider_model>/<quality>-video.mp4
-Log output: apps/<app_name>-<provider_model>/<quality>-run.log (overwrites each run)
+Video input: <bug_dir>/video.mp4
+Log output: <bug_dir>/run.log (overwrites each run)
+
+The active bug_dir is read from the first uncommented entry in the `runs`
+list in config.yml, unless overridden on the CLI.
 
 Usage:
-    python segment_replay.py [app_name] [good|bad] [--config input/config.yml] [--algo ssim|clip]
+    python segment_replay.py [bug_dir] [--config input/config.yml] [--algo ssim|clip]
     python segment_replay.py
-    python segment_replay.py gmail good
-    python segment_replay.py gmail bad --config input/config.yml
-    python segment_replay.py gmail bad --config input/config.yml --algo clip
+    python segment_replay.py data/video03-k92#9005
+    python segment_replay.py data/video03-k92#9005 --config input/config.yml --algo clip
 """
 
 SUPPORTED_ALGORITHMS = ("ssim", "clip")
@@ -133,13 +136,6 @@ def provider_model_name(config: dict[str, Any]) -> str:
     provider = str(model_config.get("provider", "")).strip()
     model_key = f"{provider}_model"
     return str(model_config.get(model_key, "unknown")).strip() or "unknown"
-
-
-def safe_app_run_dir_name(app_name: str, model: str) -> str:
-    """Build apps/<app_name>-<model> without allowing path separators."""
-    safe_app_name = re.sub(r"[^A-Za-z0-9._-]+", "_", app_name.strip())
-    safe_model = re.sub(r"[^A-Za-z0-9._-]+", "_", model.strip())
-    return f"{safe_app_name}-{safe_model}"
 
 
 def normalize_relevant_response(response: dict[str, Any]) -> dict[str, Any]:
@@ -395,8 +391,7 @@ def _apply_runtime_config(config: dict) -> None:
 
 
 def main(
-    app_name: str | None = None,
-    quality: str | None = None,
+    bug_dir: str | None = None,
     algorithm: str | None = None,
     config_path: Path | None = None,
 ):
@@ -412,31 +407,24 @@ def main(
 
     from dino_detection import run_grounding_dino, annotate_relevant_regions
 
-    run_config = config.get("run", {})
-    app_name = app_name or run_config.get("app_name")
-    quality = quality or run_config.get("quality")
-    if not app_name:
-        raise ValueError("Missing app_name. Pass it on the CLI or set run.app_name in config.")
-    if quality not in {"good", "bad"}:
-        raise ValueError("Missing/invalid quality. Pass good|bad on the CLI or set run.quality in config.")
+    bug_dir = bug_dir or get_active_run(config)
 
-    path_config = config.get("paths", {})
-    apps_root = Path(path_config.get("apps_root", "apps"))
     provider = config["model"]["provider"]
     model = provider_model_name(config)
-    app_dir_name = safe_app_run_dir_name(app_name, model)
-    app_dir = apps_root / app_dir_name
-    app_dir.mkdir(parents=True, exist_ok=True)
+    app_name = Path(bug_dir).name
+
+    paths = build_run_paths(bug_dir)
+    ensure_run_dirs(paths)
+    validate_run_inputs(paths)
 
     algorithm = (algorithm or config.get("segmentation", {}).get("algorithm", "clip")).lower()
 
     # Initialize logger with config dump
-    setup_logger(app_dir, quality, config)
+    setup_logger(paths, config)
 
     # Initialize run stats tracker
     init_run_stats(
         app_name=app_name,
-        video_quality=quality,
         provider=provider,
         model=model,
         algorithm=algorithm,
@@ -451,18 +439,10 @@ def main(
             f"Unknown algorithm '{algorithm}'. Choose from: {SUPPORTED_ALGORITHMS}"
         )
         stats.status = "failed"
-        log_run_summary(app_dir)
+        log_run_summary(paths)
         sys.exit(1)
 
-    # Resolve paths
-    video_template = path_config.get("video_filename_template", "{quality}-video.mp4")
-    video_path = app_dir / video_template.format(quality=quality)
-
-    if not video_path.exists():
-        logger.error(f"Video not found: {video_path}")
-        stats.status = "failed"
-        log_run_summary(app_dir)
-        sys.exit(1)
+    video_path = paths.video
 
     # Check and convert video format if needed
     try:
@@ -470,7 +450,7 @@ def main(
     except RuntimeError as e:
         logger.error(f"Video format check/conversion failed: {e}")
         stats.status = "failed"
-        log_run_summary(app_dir)
+        log_run_summary(paths)
         sys.exit(1)
 
     logger.info(
@@ -483,12 +463,8 @@ def main(
     video_stem = video_path.stem
     replay_config = config.get("replay", {})
     segmentation_config = config.get("segmentation", {})
-    # Output dir: apps/<app_name>-<provider_model>/<quality>-artifacts/
-    artifacts_dir = app_dir / f"{quality}-artifacts"
-    artifacts_dir.mkdir(parents=True, exist_ok=True)
-    # Cache dir: apps/<app_name>-<provider_model>/<quality>-cache/
-    cache_dir = app_dir / f"{quality}-cache"
-    cache_dir.mkdir(parents=True, exist_ok=True)
+    artifacts_dir = paths.artifacts_dir
+    cache_dir = paths.cache_dir
 
     frames, y_frames = yyh_utils.read_frames_from_video(
         video_path, header_pixel_size=replay_config.get("header_crop_px", 33)
@@ -705,7 +681,7 @@ def main(
 
     logger.info("Video processing completed.")
     stats.status = "successful" if stats.actions_executed > 0 else "incomplete"
-    log_run_summary(app_dir)
+    log_run_summary(paths)
 
 
 if __name__ == "__main__":
@@ -713,17 +689,10 @@ if __name__ == "__main__":
         description="Segment and replay actions from video."
     )
     parser.add_argument(
-        "app_name",
+        "bug_dir",
         type=str,
         nargs="?",
-        help="Application name override (default: run.app_name from config)",
-    )
-    parser.add_argument(
-        "quality",
-        type=str,
-        nargs="?",
-        choices=["good", "bad"],
-        help="Video quality override: good or bad (default: run.quality from config)",
+        help="Bug run directory override (default: first entry in runs from config)",
     )
     parser.add_argument(
         "--algo",
@@ -739,4 +708,4 @@ if __name__ == "__main__":
         help="Path to YAML config file (default: approach/input/config.yml)",
     )
     args = parser.parse_args()
-    main(args.app_name, args.quality, args.algo, args.config)
+    main(args.bug_dir, args.algo, args.config)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
 Find problem: Analyze a ViBR run and generate issue report with ViBR paper failure categories.
-Usage: python approach/find_problem.py [--app_name APP] [--quality QUALITY]
-  Defaults to config.yml values if not specified.
+Usage: python approach/find_problem.py [--bug_dir BUG_DIR]
+  Defaults to the first entry in runs from config.yml if not specified.
 """
 
 import json
@@ -10,6 +10,8 @@ import re
 from pathlib import Path
 from typing import Optional
 import yaml
+
+from run_paths import build_run_paths
 
 
 FAILURE_CATEGORIES = {
@@ -83,17 +85,22 @@ def classify_mismatch(reason: str) -> str:
     return "semantic-gap"  # default
 
 
-def load_config(app_name: Optional[str] = None, quality: Optional[str] = None):
+def load_config(bug_dir: Optional[str] = None):
     """Load config.yml and return parsed values."""
     config_path = Path("approach/input/config.yml")
     with open(config_path) as f:
         config = yaml.safe_load(f)
 
-    _app_name = app_name or config["run"]["app_name"]
-    _quality = quality or config["run"]["quality"]
+    if bug_dir:
+        _bug_dir = bug_dir
+    else:
+        runs = config.get("runs")
+        if not runs:
+            raise ValueError("Missing or empty 'runs' list in config.")
+        _bug_dir = runs[0]["bug_dir"]
     _gemini_model = config["model"]["gemini_model"]
 
-    return _app_name, _quality, _gemini_model
+    return _bug_dir, _gemini_model
 
 
 def read_artifact(path: Path) -> Optional[dict | str]:
@@ -148,8 +155,7 @@ def find_low_confidence_steps(analysis: dict) -> list[dict]:
 
 
 def build_issue_report(
-    app_name: str,
-    quality: str,
+    bug_dir: str,
     gemini_model: str,
     status: str,
     scenes: int,
@@ -161,11 +167,10 @@ def build_issue_report(
     """Build markdown issue report."""
     skipped_count = scenes - actions_executed
 
-    report = f"""# Run Issue Report: {app_name} ({quality} run)
+    report = f"""# Run Issue Report: {bug_dir}
 
-**App:** {app_name}
+**Bug dir:** {bug_dir}
 **Model:** {gemini_model}
-**Quality:** {quality}
 **Pipeline status:** {status}
 **Scenes detected:** {scenes}
 **Actions executed:** {actions_executed}
@@ -291,26 +296,19 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Analyze ViBR run and generate issue report")
-    parser.add_argument("--app_name", help="App name (default: from config.yml)")
-    parser.add_argument("--quality", help="Quality (good|bad, default: from config.yml)")
+    parser.add_argument("--bug_dir", help="Bug run directory (default: first entry in runs from config.yml)")
     args = parser.parse_args()
 
     # Load config
-    app_name, quality, gemini_model = load_config(args.app_name, args.quality)
+    bug_dir, gemini_model = load_config(args.bug_dir)
+    paths = build_run_paths(bug_dir)
 
-    # Build paths
-    app_dir = Path(f"apps/{app_name}-{gemini_model}")
-    log_path = app_dir / f"{quality}-run.log"
-    summary_path = app_dir / f"{quality}-run-summary.json"
-    analysis_path = app_dir / f"{quality}-video-analysis.json"
-    output_path = app_dir / f"{quality}-run-issue.md"
-
-    print(f"Analyzing {app_name} ({quality}) in {app_dir}/")
+    print(f"Analyzing {bug_dir}/")
 
     # Read artifacts
-    summary = read_artifact(summary_path)
-    log_text = read_artifact(log_path)
-    analysis = read_artifact(analysis_path)
+    summary = read_artifact(paths.summary_json)
+    log_text = read_artifact(paths.run_log)
+    analysis = read_artifact(paths.video_analysis_json)
 
     if not summary or not log_text:
         print("Error: Missing required artifacts (log or summary JSON)")
@@ -327,8 +325,7 @@ def main():
 
     # Generate report
     report = build_issue_report(
-        app_name=app_name,
-        quality=quality,
+        bug_dir=bug_dir,
         gemini_model=gemini_model,
         status=status,
         scenes=scenes,
@@ -339,11 +336,11 @@ def main():
     )
 
     # Write output
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w") as f:
+    paths.issue_md.parent.mkdir(parents=True, exist_ok=True)
+    with open(paths.issue_md, "w") as f:
         f.write(report)
 
-    print(f"✓ Report written to {output_path}")
+    print(f"✓ Report written to {paths.issue_md}")
     print(f"  Status: {status}")
     print(f"  Scenes: {scenes}, Actions: {actions_executed}, Skipped: {scenes - actions_executed}")
     if skipped_actions:

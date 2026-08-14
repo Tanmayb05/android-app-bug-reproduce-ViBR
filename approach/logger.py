@@ -1,30 +1,26 @@
 import logging
 import yaml
-from pathlib import Path
 from typing import Any
+
+from run_paths import RunPaths
 
 
 def setup_logger(
-    app_dir: Path,
-    quality: str,
+    paths: RunPaths,
     config: dict[str, Any] | None = None,
 ) -> logging.Logger:
     """Configure root logger for a run and log config.
 
     Args:
-        app_dir: Directory for this app/model run
-        quality: Video quality ("good" or "bad")
+        paths: Resolved run paths (run_log/debug_log used here)
         config: Optional config dict to log at start
 
     Returns:
         Configured root logger
     """
-    # Create app directory if needed
-    app_dir.mkdir(parents=True, exist_ok=True)
-
     # Log file paths (overwrites on each run)
-    log_file = app_dir / f"{quality}-run.log"
-    debug_log_file = app_dir / f"{quality}-run-debug.log"
+    log_file = paths.run_log
+    debug_log_file = paths.debug_log
 
     # Configure root logger
     root_logger = logging.getLogger()

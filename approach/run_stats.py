@@ -4,8 +4,9 @@ import time
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Literal
-from pathlib import Path
 import json
+
+from run_paths import RunPaths
 
 
 def _format_duration(seconds: float) -> str:
@@ -33,7 +34,6 @@ class RunStats:
     """Aggregates run metrics."""
 
     app_name: str
-    video_quality: str
     provider: str
     model: str
     algorithm: str
@@ -113,7 +113,6 @@ class RunStats:
         """Convert to dict for JSON serialization."""
         return {
             "app_name": self.app_name,
-            "video_quality": self.video_quality,
             "provider": self.provider,
             "model": self.model,
             "algorithm": self.algorithm,
@@ -140,7 +139,6 @@ _current_stats: RunStats | None = None
 
 def init_run_stats(
     app_name: str,
-    video_quality: str,
     provider: str,
     model: str,
     algorithm: str,
@@ -150,7 +148,6 @@ def init_run_stats(
     global _current_stats
     _current_stats = RunStats(
         app_name=app_name,
-        video_quality=video_quality,
         provider=provider,
         model=model,
         algorithm=algorithm,
@@ -214,7 +211,7 @@ def record_llm_response(latency_s: float, response: Any) -> None:
     _current_stats.record_llm_call(latency_s, input_tokens, output_tokens)
 
 
-def log_run_summary(app_dir: Path) -> None:
+def log_run_summary(paths: RunPaths) -> None:
     """Log structured summary at end of run."""
     if _current_stats is None:
         logging.warning("No run stats to summarize")
@@ -227,7 +224,7 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info("RUN SUMMARY")
     logger.info("=" * 80)
     logger.info(f"App: {_current_stats.app_name}")
-    logger.info(f"Video: {_current_stats.video_quality}-video.mp4")
+    logger.info(f"Video: {paths.video}")
     logger.info(f"Provider + Model: {_current_stats.provider} / {_current_stats.model}")
     logger.info(f"Algorithm: {_current_stats.algorithm}")
     logger.info(f"Status: {_current_stats.status}")
@@ -247,8 +244,6 @@ def log_run_summary(app_dir: Path) -> None:
     logger.info(f"Total duration: {_format_duration(_current_stats.duration_s)}")
     logger.info("=" * 80)
 
-    # Also write JSON summary to apps/<app_name>-<provider_model>/<quality>-run-summary.json
-    summary_path = app_dir / f"{_current_stats.video_quality}-run-summary.json"
-    with open(summary_path, "w") as f:
+    with open(paths.summary_json, "w") as f:
         json.dump(_current_stats.to_dict(), f, indent=2)
-    logger.info(f"Summary written to {summary_path}")
+    logger.info(f"Summary written to {paths.summary_json}")

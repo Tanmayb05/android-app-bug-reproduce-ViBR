@@ -29,3 +29,15 @@ def get_config(path: Path | str | None = None) -> dict[str, Any]:
     if _config is None:
         _config = load_config(_config_path)
     return _config
+
+
+def get_active_run(config: dict[str, Any]) -> str:
+    """Return bug_dir of the first uncommented entry in config['runs']."""
+    runs = config.get("runs")
+    if not runs:
+        raise ValueError("Missing or empty 'runs' list in config.")
+    first = runs[0]
+    bug_dir = first.get("bug_dir") if isinstance(first, dict) else None
+    if not bug_dir:
+        raise ValueError("First entry in 'runs' is missing 'bug_dir'.")
+    return str(bug_dir)

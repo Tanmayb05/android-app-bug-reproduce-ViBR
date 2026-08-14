@@ -9,7 +9,6 @@ from segment_replay import (
     normalize_action_response,
     normalize_relevant_response,
     provider_model_name,
-    safe_app_run_dir_name,
 )
 
 
@@ -68,17 +67,3 @@ def test_provider_model_name_uses_selected_provider_model():
     }
 
     assert provider_model_name(config) == "gemini-2.5-flash"
-
-
-def test_safe_app_run_dir_name_uses_app_dash_model():
-    assert (
-        safe_app_run_dir_name("adaway", "gemini-2.5-flash")
-        == "adaway-gemini-2.5-flash"
-    )
-
-
-def test_safe_app_run_dir_name_replaces_path_separators():
-    assert (
-        safe_app_run_dir_name("demo app", "provider/model")
-        == "demo_app-provider_model"
-    )
