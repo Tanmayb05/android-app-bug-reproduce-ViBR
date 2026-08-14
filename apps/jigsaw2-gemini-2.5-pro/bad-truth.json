@@ -1,0 +1,128 @@
+{
+  "video_summary": {
+    "app_name": "jigsaw2",
+    "overall_goal": "Generate and play a 9-piece jigsaw puzzle in \"Without Rotations\" mode",
+    "device_type": "Android",
+    "description": "User navigates puzzle menu, adjusts puzzle size to 9 pieces, selects \"Without Rotations\" mode, generates puzzle, and starts gameplay"
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": 0.0,
+      "timestamp_end": 1.0,
+      "screen_name": "PuzzleMenu",
+      "what_screen_is_visible": "Main puzzle configuration menu with puzzle picture preview, size selector, and action buttons",
+      "visible_ui_elements": [
+        "Puzzle Picture preview (blue square)",
+        "Left/Right navigation arrows",
+        "Puzzle Size selector showing value 4",
+        "Moto Gametime toggle notification",
+        "Without Rotations button",
+        "Generate Puzzle button",
+        "Back to current Puzzle button"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Puzzle Size selector",
+      "system_response": "Puzzle size selector becomes interactive, ready for scroll input",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "User hand visible pointing at puzzle size area",
+      "intent_task": "Begin puzzle size adjustment interaction",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": 1.0,
+      "timestamp_end": 3.0,
+      "screen_name": "PuzzleMenu",
+      "what_screen_is_visible": "Puzzle menu unchanged, puzzle size selector actively scrolling",
+      "visible_ui_elements": [
+        "Puzzle Size selector showing progression: 4 → 2 → 4 → 6"
+      ],
+      "user_gesture": "scroll_up",
+      "target_element": "Puzzle Size selector",
+      "system_response": "Puzzle size value changes dynamically as user scrolls: 4 → 2 → 4 → 6",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "User hand maintains contact with selector, values update",
+      "intent_task": "Scroll through puzzle size options",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": 3.0,
+      "timestamp_end": 5.0,
+      "screen_name": "PuzzleMenu",
+      "what_screen_is_visible": "Puzzle menu, size selector continues scrolling",
+      "visible_ui_elements": [
+        "Puzzle Size selector showing progression: 6 → 9"
+      ],
+      "user_gesture": "scroll_up",
+      "target_element": "Puzzle Size selector",
+      "system_response": "Size value continues updating: 6 → 9",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Hand still on selector, final size 9 reached",
+      "intent_task": "Continue scrolling to reach 9-piece puzzle",
+      "confidence": "high"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": 5.0,
+      "timestamp_end": 6.0,
+      "screen_name": "PuzzleMenu",
+      "what_screen_is_visible": "Puzzle menu with size set to 9, menu fully visible",
+      "visible_ui_elements": [
+        "Puzzle Size showing value 9",
+        "Without Rotations button",
+        "Generate Puzzle button (user hand pointing at it)"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Generate Puzzle button",
+      "system_response": "Button tap registered, puzzle generation initiates",
+      "navigation_change": "menu to gameplay",
+      "data_entered": "puzzle_size=9, mode=without_rotations",
+      "visual_feedback": "User hand visible pointing at Generate Puzzle button, menu remains visible",
+      "intent_task": "Trigger puzzle generation with selected parameters",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": 6.0,
+      "timestamp_end": 7.0,
+      "screen_name": "PuzzleGameplay",
+      "what_screen_is_visible": "Puzzle gameplay screen with generated 9-piece jigsaw puzzle",
+      "visible_ui_elements": [
+        "Puzzle pieces scattered on dark background",
+        "Status bar at top",
+        "9 individual puzzle pieces in light blue color"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "Puzzle gameplay area",
+      "system_response": "Puzzle successfully generated and gameplay screen displayed",
+      "navigation_change": "menu to gameplay",
+      "data_entered": "",
+      "visual_feedback": "Clear transition from menu to gameplay, pieces visible and ready for interaction",
+      "intent_task": "Display generated puzzle and start gameplay",
+      "confidence": "high"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "scroll_up",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "User views puzzle configuration menu",
+    "User scrolls puzzle size selector from initial value to 9 pieces",
+    "User taps Generate Puzzle button to create puzzle with size=9 and mode=without_rotations",
+    "Puzzle game screen loads with 9 scattered pieces ready for gameplay"
+  ],
+  "human_readable_step_summary": [
+    "Step 1: User begins interacting with puzzle size selector on the menu",
+    "Step 2: User scrolls puzzle size selector through values 4→2→4→6",
+    "Step 3: User continues scrolling size selector to reach 9 pieces",
+    "Step 4: User taps Generate Puzzle button to initiate puzzle creation",
+    "Step 5: Puzzle game starts with 9 pieces displayed on gameplay screen"
+  ]
+}
