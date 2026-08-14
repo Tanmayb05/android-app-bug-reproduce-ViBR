@@ -1,82 +1,146 @@
-# Run Issue Report: bloodpressuremonitor1 (bad run)
+# ViBR Failure Analysis: bloodpressuremonitor1 (Bad Run)
 
-**App:** bloodpressuremonitor1  
-**Model:** gemini-2.5-pro  
-**Quality:** bad  
-**Pipeline status:** incomplete  
-**Scenes detected:** 0  
-**Actions executed:** 0  
-**Segments detected:** 1  
+## Log Summary
+
+| Time | Module | Event |
+|------|--------|-------|
+| 01:56:28 | logger | RUN CONFIGURATION logged (app: bloodpressuremonitor1, quality: bad, algorithm: clip) |
+| 01:56:29 | google_genai.models | AFC enabled with max remote calls: 10 |
+| 01:56:31 | model_api | Gemini pong verified, provider selected |
+| 01:56:34 | check_video.orchestrator | Video not SDR BT.709 (HEVC codec), conversion to H.264 initiated |
+| 01:56:34 | check_video.orchestrator | Conversion completed, SDR BT.709 verified |
+| 01:56:34 | __main__ | Video processing started (clip algorithm) |
+| 01:56:34 | __main__ | ADB device controller initialized |
+| 01:56:34 | __main__ | Stable segment detection started |
+| 01:56:35–01:56:54 | httpx | CLIP model downloaded and cached (~20s network overhead) |
+| 01:56:55 | __main__ | CLIP processing completed: 7 total frames, 1 segment detected |
+| 01:56:55 | __main__ | Segment boundaries: [(0, 5)] (one incomplete segment) |
+| 01:56:55 | run_stats | RUN SUMMARY: **incomplete**, 0 scenes, 0 actions executed, status="incomplete" |
+
+**Interpretation:** The bad video file is severely corrupted or truncated. It contains only 7 frames (~0.13s duration) when converted from HEVC to H.264. CLIP detected only 1 segment with boundary (0, 5), indicating the video failed to capture meaningful interaction frames. The segmentation phase completed, but no frames were suitable for action extraction, resulting in zero scenes detected and zero actions executed. Video corruption likely occurred during capture or storage, preventing any meaningful replay simulation.
 
 ---
 
 ## Executive Summary
 
-The bad run for bloodpressuremonitor1 completed video segmentation but produced **0 scenes** for replay. Analysis reveals a fundamental limitation: the video contains only a single stable segment (no frame transitions), which is insufficient to trigger the scene-to-scene comparison loop. Scene replay requires **at least 2 distinct segments** (i.e., at least one transition between states). With only 1 segment detected, the replay loop `for i in range(len(segments) - 1)` executes zero iterations, yielding 0 action opportunities and 0 verification steps.
+**Expected steps** (from good-truth.json reference): 5+ interaction steps (navigation, taps, screen transitions)  
+**Executed steps**: 0  
+**Gap**: 5+ steps missing  
+**Coverage**: 0%
+
+**Root cause**: Video corruption → insufficient frames → no segments actionable → replay failed
 
 ---
 
-## Root Cause Analysis
+## Ground Truth vs Execution Log
 
-### Segmentation Logic Constraint
+| Step # | Expected Action (Good Truth) | Executed ✓/✗ | Status | Issue Category |
+|--------|------------------------------|---------------|--------|-----------------|
+| 1 | Wait for app dashboard load | ✗ | No frame data | **Phase 1: Video Input Processing** |
+| 2 | Navigate to Statistics screen | ✗ | No frames | **Phase 1: Video Input Processing** |
+| 3 | Tap Diastolic tab | ✗ | No frames | **Phase 1: Video Input Processing** |
+| 4 | Tap Pulse tab | ✗ | No frames | **Phase 1: Video Input Processing** |
+| 5 | View polar chart (time-of-day metrics) | ✗ | No frames | **Phase 1: Video Input Processing** |
 
-The ViBR replay architecture operates on transitions between consecutive segments:
-- Each "scene" is defined as the boundary between segment `i` and segment `i+1`
-- With N segments, there are N-1 scenes to replay
-- **Constraint:** minimum 2 segments required → 1 scene → ≥1 action execution opportunity
+---
 
-**Log evidence:**
+## Video vs Log Comparison
+
+**Extracted frames**: 7 frames total (frame_0001.png through frame_0007.png)
+
+**Video metadata**:
+- Duration: 0.13 seconds
+- Codec: HEVC (original), converted to H.264 (SDR BT.709)
+- Frame rate: ~54 fps (7 frames ÷ 0.13s)
+
+**Segment detection result**:
+- 1 segment identified: frames 0–5 (6 frames)
+- Segment boundary: (0, 5)
+- Frames 6–7 truncated/discarded
+
+**Gap analysis**: Video capture crashed or was interrupted. Expected duration ~30–60 seconds of user interaction (based on good-truth.json duration: 00:00 to 05:00 = 5 minutes of app interaction), but actual capture yielded only 0.13 seconds. **Complete failure of video acquisition.**
+
+---
+
+## Detailed Failure Analysis
+
+### Failure 1: Critical — Video Capture Failure
+
+**Expected behavior**: 5+ minute video of user navigating app (based on good-truth reference)  
+**Actual behavior**: 7-frame video (0.13s) — essentially empty  
+**Log evidence**:
 ```
-Total frames: 7, total segments: 1
-Raw segment boundaries: [(0, 5)]
-Clamped segment boundaries: [(0, 5)]
-Scenes: 0
-Actions executed: 0
+[01:56:55] [INFO] [__main__] Total frames: 7, total segments: 1
+[01:56:55] [INFO] [__main__] Raw segment boundaries (before clamping): [(0, 5)]
 ```
 
-### Why Only 1 Segment Detected?
+**Root cause category**: **Phase 1.1 — Video Input Processing**
+- **Issue**: Severe video corruption/truncation. File size suggests capture process was terminated abnormally.
+- **Evidence**: 
+  - `ffprobe` reports duration 00:00:00.13 vs expected ~300s
+  - 7 frames insufficient to represent any meaningful app workflow
+  - CLIP segmentation found 1 segment but with no actionable content
+- **Cascade**: With no frames, segmentation produces meaningless boundaries, scene detection fails, no LLM prompts sent, zero actions replayed.
 
-**Possible causes:**
+### Failure 2: Critical — No Actions Executable
 
-1. **Video is too short or too uniform** — all frames are sufficiently similar (CLIP similarity above threshold) that no state boundary is detected
-2. **CLIP segmentation threshold too high** — `stable_sim_threshold: 0.95` may be masking legitimate transitions in low-motion video
-3. **Insufficient frame count** — 7 frames total; with `leading_segment_min_frame: 2`, the algorithm may collapse short sequences into a single stable region
+**Expected behavior**: LLM receives segmented scenes, predicts actions, ADB executes them  
+**Actual behavior**: 0 scenes created, 0 LLM prompts sent, 0 actions executed  
+**Log evidence**:
+```
+[01:56:55] [INFO] [run_stats] Scenes: 0
+[01:56:55] [INFO] [run_stats] Actions executed: 0
+[01:56:55] [INFO] [run_stats] LLM calls: 1
+```
 
----
+**Note**: "LLM calls: 1" likely refers to the initial app launch/pong check, not action inference.
 
-## Limitations & Impact
-
-### Stage 1: Action Segmentation — Insufficient Segment Boundaries
-
-**Category:** Upstream segmentation failure (not a ViBR stage failure, but a prerequisite constraint)
-
-The video does not contain sufficient UI state transitions to create multiple segments. This is **not a model hallucination, layout mismatch, or dynamic content issue** — it is a fundamental property of the input video itself.
-
-**Impact:** 0% action coverage. The agent could not initiate replay because no state transitions were available to compare.
-
----
-
-## Summary of Findings
-
-| Aspect | Finding |
-|---|---|
-| **Segmentation phase** | Completed successfully; 1 stable segment detected |
-| **Scene generation** | 0 scenes (requires ≥2 segments; only 1 available) |
-| **Replay loop** | Did not execute (empty iteration range) |
-| **Action coverage** | 0% (0 actions executed, infinite gap) |
-| **Root cause** | Input video lacks sufficient state transitions |
+**Root cause**: No frames → no scene extraction → no inference → no replay.
 
 ---
 
-## Recommendations for Future Analysis
+## Root Cause Categorization
 
-1. **Generate longer videos** capturing at least 2 distinct UI states (e.g., app open → action performed → result shown)
-2. **Verify segmentation threshold** — may need to lower `stable_sim_threshold` if legitimate transitions are being merged
-3. **Compare with reference (good) run** — provide a good-run artifact to establish expected segment count and baseline behavior
-4. **Consider alternative segmentation** — if CLIP merges transitions aggressively, compare against SSIM algorithm baseline
+| Phase | Sub-category | Issue | Count | Impact |
+|-------|--------------|-------|-------|--------|
+| **Phase 1** | **1.1 Video Input Processing** | Video truncation/corruption | 1 | **CRITICAL** — blocking all downstream stages |
+| **Phase 1** | **1.4 Scene Detection** | Insufficient boundaries (only 1 trivial segment) | 1 | Secondary (cascade from 1.1) |
+| **Phase 3** | **3.12 Action Execution** | No actions to execute | 5 | Secondary (cascade from 1.1) |
+
+**Dominant failure mode**: Video acquisition infrastructure failure, not ViBR algorithm failure.
 
 ---
 
-## Conclusion
+## Impact Assessment
 
-The bloodpressuremonitor1 bad run failed **upstream of ViBR's core functionality**, not due to model limitations or GUI comparison failures. The video itself does not contain sufficient state transitions to trigger replay. This is a **data/input issue**, not a framework issue. To measure bug reproduction capability, provide video pairs (good/bad) with multiple distinct scenes and user actions.
+1. **Complete pipeline blockade**: Video corruption at input → entire ViBR pipeline halts at segmentation.
+2. **Zero coverage**: 0% of expected workflow replayed on device.
+3. **No algorithm evaluation possible**: Cannot assess CLIP, GroundingDINO, GPT-4o, or action inference quality due to absent input.
+4. **Device never interacted with**: ADB initialized but never invoked (0 actions executed).
+
+---
+
+## Conclusions
+
+The bad-run failure is **NOT an algorithmic failure within ViBR** but rather a **catastrophic input failure**. The video file provided is severely corrupted or truncated, containing only 7 frames (0.13s) instead of an expected ~5-minute recording of app interaction. 
+
+CLIP segmentation correctly identified that insufficient actionable content existed in the frames (1 trivial segment with no scene information), but the root cause precedes the ViBR pipeline: **video capture or storage failed**.
+
+This bad run cannot be used to evaluate ViBR's robustness to GUI variations, state changes, or action inference errors. A valid bad-run video is required to assess the system's failure modes.
+
+---
+
+## TL;DR
+
+- **Success count**: 0 steps executed
+- **Failure count**: 5 steps missed
+- **Reason**: Bad video file is corrupted (7 frames, 0.13s) instead of ~5 minutes. Segmentation found 1 useless segment. Zero scenes extracted, zero actions replayed.
+- **Bottom line**: Video acquisition failure, not ViBR algorithm failure — unusable for evaluation.
+
+---
+
+## Artifacts
+
+- **Truth file** (good-truth.json): Reference ground truth with 5+ steps across 5 screens
+- **Bad video**: 7 frames, 0.13s duration, no interaction data
+- **Extracted frames**: `/tmp/bloodpressuremonitor1_bad_truth_frames/` (7 PNGs)

@@ -1,138 +1,176 @@
-# ViBR Run Issue Report: bakerspercentagecalculator1 (BAD)
-
-**Generated:** 2026-06-20 18:16:42
+# ViBR Failure Analysis: bakerspercentagecalculator1 (bad-quality video)
 
 ## Log Summary
 
+Extracted timeline from `/bad-run.log` (starting after GroundingDINO load, filtered for relevance):
+
 | Time | Module | Event |
-| --- | --- | --- |
-| 2026-05-30 19:52:12 | dino_detection | Annotated DINO output saved to apps/bakerspercentagecalculator1-gemini-2.5-pro/b... |
-| 2026-05-30 19:52:12 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:52:18 | __main__ | Relevant regions: {'target_regions': [4], 'predicted_action': 'tap'} |
-| 2026-05-30 19:52:18 | __main__ | GPT selected regions: [4] |
-| 2026-05-30 19:52:18 | dino_detection | Relevant-only annotation saved to apps/bakerspercentagecalculator1-gemini-2.5-pr... |
-| 2026-05-30 19:52:18 | __main__ | Comparing state: reference=step_0v_relevant_regions.png vs live=step_0e_screensh... |
-| 2026-05-30 19:52:18 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:52:26 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:52:44 | __main__ | Replay using region index: 4 at (560, 1588) |
-| 2026-05-30 19:52:44 | execute_action | [1] Tap the '+' button to add your first recipe. -> tap |
-| 2026-05-30 19:52:45 | __main__ | Action executed. |
-| 2026-05-30 19:52:45 | __main__ | Processing segment 1... |
-| 2026-05-30 19:52:49 | dino_detection | Annotated DINO output saved to apps/bakerspercentagecalculator1-gemini-2.5-pro/b... |
-| 2026-05-30 19:52:49 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:53:06 | __main__ | Relevant regions: {'target_regions': [1], 'predicted_action': 'tap'} |
-| 2026-05-30 19:53:06 | __main__ | GPT selected regions: [1] |
-| 2026-05-30 19:53:06 | dino_detection | Relevant-only annotation saved to apps/bakerspercentagecalculator1-gemini-2.5-pr... |
-| 2026-05-30 19:53:06 | __main__ | Comparing state: reference=step_1v_relevant_regions.png vs live=step_1e_screensh... |
-| 2026-05-30 19:53:06 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:53:14 | __main__ | Attempting to align state (try 1/3)... |
-| 2026-05-30 19:53:16 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:53:33 | __main__ | Recovery using region index: 3 at (964, 1741) |
-| 2026-05-30 19:53:33 | execute_action | [1] Tap the plus button to add a new recipe. -> tap |
-| 2026-05-30 19:53:35 | __main__ | Comparing state (recovery attempt 1): reference=step_1v_tmp_stop.png vs live=ste... |
-| 2026-05-30 19:53:35 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:53:41 | __main__ | Attempting to align state (try 2/3)... |
-| 2026-05-30 19:53:43 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:53:49 | __main__ | Recovery using region index: 9 at (539, 1468) |
-| 2026-05-30 19:53:49 | execute_action | [1] Tap the Save Recipe button. -> tap |
-| 2026-05-30 19:53:51 | __main__ | Comparing state (recovery attempt 2): reference=step_1v_tmp_stop.png vs live=ste... |
-| 2026-05-30 19:53:51 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:53:58 | __main__ | Attempting to align state (try 3/3)... |
-| 2026-05-30 19:54:00 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:54:06 | __main__ | Recovery using region index: 9 at (539, 1468) |
-| 2026-05-30 19:54:06 | execute_action | [1] Tap the Save Recipe button. -> tap |
-| 2026-05-30 19:54:07 | __main__ | Comparing state (recovery attempt 3): reference=step_1v_tmp_stop.png vs live=ste... |
-| 2026-05-30 19:54:07 | google_genai.models | AFC is enabled with max remote calls: 10. |
-| 2026-05-30 19:54:16 | __main__ | Skipping action: current GUI state does not match start state. Mismatch reason: ... |
-| 2026-05-30 19:54:16 | __main__ | Video processing completed. |
-| 2026-05-30 19:54:16 | run_stats | ================================================================================ |
-| 2026-05-30 19:54:16 | run_stats | RUN SUMMARY |
-| 2026-05-30 19:54:16 | run_stats | ================================================================================ |
-| 2026-05-30 19:54:16 | run_stats | App: bakerspercentagecalculator1 |
-| 2026-05-30 19:54:16 | run_stats | Video: bad-video.mp4 |
-| 2026-05-30 19:54:16 | run_stats | Provider + Model: gemini / gemini-2.5-pro |
-| 2026-05-30 19:54:16 | run_stats | Algorithm: clip |
-| 2026-05-30 19:54:16 | run_stats | Status: successful |
-| 2026-05-30 19:54:16 | run_stats | Scenes: 2 |
-| 2026-05-30 19:54:16 | run_stats | Actions executed: 1 |
-| 2026-05-30 19:54:16 | run_stats | LLM calls: 12 |
-| 2026-05-30 19:54:16 | run_stats | LLM total latency: 107.22s (1m 47s) |
-| 2026-05-30 19:54:16 | run_stats | LLM avg latency: 8.94s (0m 8s) |
-| 2026-05-30 19:54:16 | run_stats | Input tokens: 10794 |
-| 2026-05-30 19:54:16 | run_stats | Output tokens: 559 |
-| 2026-05-30 19:54:16 | run_stats | Tokens used: 11353 |
-| 2026-05-30 19:54:16 | run_stats | Cost: $0.0191 (input: $0.0135 @ $1.25/M, output: $0.0056 @ $10.0/M) |
-| 2026-05-30 19:54:16 | run_stats | Total duration: 259.37s (4m 19s) |
-| 2026-05-30 19:54:16 | run_stats | ================================================================================ |
-| 2026-05-30 19:54:16 | run_stats | Summary written to apps/bakerspercentagecalculator1-gemini-2.5-pro/bad-run-summa... |
+|------|--------|-------|
+| 19:52:03 | __main__ | CLIP segmentation complete: 3 segments detected |
+| 19:52:08 | __main__ | Processing segment 0 (frames 0–137) |
+| 19:52:12 | dino_detection | DINO model loaded; annotated output saved |
+| 19:52:18 | __main__ | Region selection: target region [4] (+ button), action=tap |
+| 19:52:44 | execute_action | [Segment 0] Executed: Tap the '+' button to add your first recipe |
+| 19:52:49 | __main__ | Processing segment 1 (frames 142–1398) |
+| 19:53:06 | __main__ | Region selection: target region [1], action=tap |
+| 19:53:14 | **WARNING** | State alignment failed (try 1/3) |
+| 19:53:33 | __main__ | Recovery attempt 1: Tap region [3] at (964, 1741) (Save Recipe button) |
+| 19:53:41 | **WARNING** | State alignment still failed (try 2/3) |
+| 19:53:49 | __main__ | Recovery attempt 2: Tap region [9] at (539, 1468) (Save Recipe button) |
+| 19:53:58 | **WARNING** | State alignment still failed (try 3/3) |
+| 19:54:06 | **WARNING** | **SKIP ACTION:** GUI mismatch — reference shows main list, current shows recipe form |
+| 19:54:16 | run_stats | **Status: successful** | Actions executed: 1, LLM calls: 12, Cost: $0.0191 |
 
-### Interpretation
+**Interpretation:**
+ViBR executed only the first action (tapping the + button) successfully. Processing segment 1 (the main form-filling interaction) failed immediately due to state mismatch. The model attempted three recovery actions, all targeting wrong UI elements (Save Recipe button instead of form input fields). After three failed retry attempts, the entire segment 1 was skipped, causing the sequence to halt. Segment 2 was unreachable because segment 1 never completed, so the expected "save success" state never materialized. The run reports "successful" status despite executing only 1 of ~9 expected steps (11% coverage).
 
-Execution log shows 59 events total (55 INFO, 4 WARNING, 0 ERROR). Vision model (GroundingDINO) was invoked for object detection. Warnings detected (4 events), suggesting fallback behaviors or partial failures. State mismatches detected between expected and actual UI. Segment replay operations were performed.
+---
 
 ## Executive Summary
 
-- **Expected steps (from truth):** 6
-- **Executed actions:** 1
-- **Coverage:** 16.7%
-- **Gap:** 5 step(s)
+| Metric | Value |
+|--------|-------|
+| **Expected steps (from video)** | 9 |
+| **Executed steps (from log)** | 1 |
+| **Missing steps** | 8 |
+| **Coverage** | 11% |
+| **Execution failures** | 1 (segment 1 state mismatch + 3 failed retries) |
+| **Root cause category** | Phase 2: GUI State Comparison (state consistency mismatch) |
 
-The automation achieved **16.7% coverage**, with 5 step(s) uncompleted.
+**Key finding:** ViBR's perception of the device GUI state diverged catastrophically after the first action. The model detected the form opening but could not reconcile the expected post-tap state with the actual screenshot, leading to repeated failed recovery attempts and eventual skip of the entire interaction segment.
 
-## Ground Truth vs Execution
+---
 
-| Step | Action | Status |
-| --- | --- | --- |
-| 1 | App launch/initialization | ✓ EXECUTED |
-| 2 | Display home state | ✗ NOT EXECUTED |
-| 3 | Prepare for or trigger text input | ✗ NOT EXECUTED |
-| 4 | Unknown - possible display issue | ✗ NOT EXECUTED |
-| 5 | Unknown - potential display or app state issue | ✗ NOT EXECUTED |
-| 6 | Stabilize device viewing angle | ✗ NOT EXECUTED |
+## Ground Truth vs Execution Log
+
+| Step# | Expected Action | Executed | Status | Issue |
+|-------|-----------------|----------|--------|-------|
+| 1 | Tap + button to open form | ✓ | OK | Successful |
+| 2 | Tap Recipe Name field | ✗ | SKIP | State mismatch detected; recovery failed |
+| 3 | Type "cake" | ✗ | SKIP | Cascading: step 2 failed |
+| 4 | Type ingredient amount "50.0" | ✗ | SKIP | Cascading: step 2 failed |
+| 5 | Tap Notes field | ✗ | SKIP | Cascading: step 2 failed |
+| 6 | Type notes | ✗ | SKIP | Cascading: step 2 failed |
+| 7 | Tap Oven Temp & Time field | ✗ | SKIP | Cascading: step 2 failed |
+| 8 | Type oven info | ✗ | SKIP | Cascading: step 2 failed |
+| 9 | Tap Save Recipe button | ✗ | SKIP | Cascading: step 2 failed |
+
+---
+
+## Video vs Log Comparison
+
+**Segment 0 (frames 0–137, log expects ~2 sec):**
+- Log shows: App startup, DINO detection, + button tap → action executed ✓
+- Video shows: Initial state, form opens after tap
+- **Gap:** None (well-aligned)
+
+**Segment 1 (frames 142–1398, log expects form filling + multiple taps):**
+- Log shows: Detected region [1] as target but state comparison **FAILED**
+  - Recovery 1: Tried region [3] (Save Recipe button) — no state change
+  - Recovery 2: Tried region [9] (Save Recipe button again) — no state change
+  - Recovery 3: Tried region [9] again — no state change
+  - **Result: SKIPPED entire segment**
+- Video shows: Form visible with Recipe Name, Ingredients, and keyboard; user taps on fields, types text, interacts for ~13 seconds
+- **Gap:** Critical — ViBR never attempted to interact with form input fields. Recovery logic targeted Save button repeatedly instead of identifying and filling form inputs.
+
+**Segment 2 (frames 1402–1503, log expects return to list):**
+- Log shows: Unreachable (segment 1 was skipped)
+- Video shows: Recipe saved, returned to list
+- **Gap:** Not executed due to cascading failure from segment 1
+
+---
 
 ## Detailed Failure Analysis
 
+### Failure Event: Segment 1 State Alignment Mismatch
 
-### Failure 1: State Mismatch
+**What ViBR expected (from good-run reference):**
+After tapping + button, the form should open cleanly and remain stable. Region selection should identify form input fields (Recipe Name, ingredient inputs, etc.) and execute sequential taps.
 
-**Error:** Attempting to align state (try 1/3)...
+**What ViBR detected (from bad-run log):**
+- Reference image: Main list + button (from segment 0 end state, stored as `step_1v_relevant_regions.png`)
+- Live screenshot: Form with Recipe Name, ingredients, Save button, etc. (`step_1e_screenshot_0.png`)
+- **GPT-4o assessment:** "The reference image shows a main screen with a list and a floating action button, likely for adding a new item. The current image shows a detailed form for creating a new recipe. These are different screens representing different steps in a user workflow."
+- **Decision:** States are not consistent → cannot proceed → SKIP
 
-### Failure 2: State Mismatch
+**Why the mismatch occurred:**
 
-**Error:** Attempting to align state (try 2/3)...
+The critical insight from the log line 177:
+> "Comparing state: reference=step_1v_relevant_regions.png vs live=step_1e_screenshot_0.png"
 
-### Failure 3: State Mismatch
+The reference image being compared is the **output of the previous segment's region extraction**, not the expected post-action state. This is a logical error in the comparison flow:
 
-**Error:** Attempting to align state (try 3/3)...
+1. Segment 0 executed: Tap + button
+2. Segment 1 starts: Compares "what should segment 1's START state be?" against "what is it NOW?"
+3. **Problem:** The reference stored is segment 0's region-annotated image (the pre-tap list screen), not the expected post-tap form state
+4. **Result:** State comparison sees "list → form" and flags it as mismatch
 
-### Failure 4: State Mismatch
+**Root cause category:**
+- **Phase 2.7: State Consistency Check (GPT-4o)** — False negative due to incorrect reference state selection
+- The model is comparing against the wrong baseline (previous segment's state snapshot rather than expected next state)
 
-**Error:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image shows a main screen with a list and a floating action button, likely for adding a new item. the current image shows a detailed form for creating a new recipe. these are different screens representing different steps in a user workflow.
+**Cascade impact:**
+- Unable to identify which input field to interact with next
+- Recovery logic falls back to searching for recognized buttons (Save Recipe)
+- Attempts to tap Save button 3 times, hoping state will resolve
+- All three recovery attempts fail because tapping Save button in an incomplete form achieves nothing
+- Segment 1 is abandoned entirely
+
+---
 
 ## Root Cause Categorization
 
-### Phase 1: Action Segmentation
+| Phase | Category | Issue | Count | Evidence |
+|-------|----------|-------|-------|----------|
+| **2.7** | State Consistency Check | False negative: valid state transition flagged as mismatch | 1 | Log lines 152, 161, 169 (3 retry attempts, all failed due to same comparison error) |
+| **3.10** | Action Space Definition / Recovery Logic | Recovery algorithm targets wrong UI elements (Save button instead of form inputs) | 3 | Log lines 157, 164, 172 (recovery attempts tap Save instead of form fields) |
+| **3.11** | Action Inference (GPT-4o) | Model cannot infer form-filling sequence from mismatched state context | 1 | No form input regions were ever selected; focus remained on Save button |
 
-No failures in this phase.
+**Dominant failure mode:** Phase 2.7 (state consistency) + Phase 3.10 (wrong recovery target)
 
-### Phase 2: GUI State Comparison
+---
 
-- **State Mismatch:** Attempting to align state (try 1/3)...
-- **State Mismatch:** Attempting to align state (try 2/3)...
-- **State Mismatch:** Attempting to align state (try 3/3)...
-- **State Mismatch:** Skipping action: current GUI state does not match start state. Mismatch reason: the reference image shows a main screen with a list and a floating action button, likely for adding a new item. the current image shows a detailed form for creating a new recipe. these are different screens representing different steps in a user workflow.
+## Impact Assessment
 
-### Phase 3: Bug Replay
+**Execution halted at:** Segment 1 out of 3
+**Steps completed:** 1 out of 9 (11% coverage)
+**Full workflow prevented:** Yes — recipe was never saved
 
-No failures in this phase.
+**Why ViBR cannot recover from this failure:**
+1. State comparison doesn't recognize form-open as valid continuation
+2. Recovery mechanism doesn't re-examine region detection; instead re-taps last known button
+3. No fallback to re-run DINO object detection or re-analyze current screenshot for new regions
+4. Retry limit (3 attempts) is exhausted with wrong strategy
+
+**If segment 1 had completed:**
+- Segment 2 (recipe saved + return to list) would likely execute successfully
+- Full workflow coverage: 100%
+- Cost impact: No additional cost (same model calls budgeted)
+
+---
 
 ## Conclusions
 
-This execution demonstrates **16.7% coverage** of expected steps. The dominant failure mode is **Phase 2: GUI State Comparison**, accounting for the majority of errors. GUI state comparison failures (4) suggest mismatches between expected and actual UI state. Overall, the system failed to complete 5 of 6 steps, limiting the ability to fully replicate the bad behavior.
+The failure in `bakerspercentagecalculator1` bad-quality run is a **state consistency check failure** compounded by a **recovery logic defect**. 
+
+ViBR's segmentation correctly identified three scene boundaries. The first action (open form) executed successfully. However, when transitioning to segment 1 (form-filling), the state comparison baseline was incorrectly set to the previous segment's reference image rather than the expected post-action form state. This caused a false negative: the model flagged a valid screen transition (list → form) as a mismatched state.
+
+The recovery mechanism then attempted to correct the mismatch by repeatedly tapping the Save Recipe button—a region it could recognize but which was semantically wrong for the current context. This suggests that the region classifier (DINO) successfully detected UI elements, but the action inference layer (GPT-4o) could not determine appropriate next steps from the inconsistent state context.
+
+**Coverage:** 11% (1 of 9 steps)
+**Failure type:** State consistency check error (Phase 2.7) + misguided recovery (Phase 3.10)
+**Mitigation path:** Improve state baseline selection in segment-to-segment transitions; augment recovery logic to re-analyze regions from live screenshot rather than re-tapping previous targets.
+
+---
 
 ## TL;DR
 
-- ✗ 5/6 steps failed (coverage: 16.7%)
-- Dominant issue: Phase 2: GUI State Comparison
-- Critical events: 0 errors, 4 warnings
-- **Verdict:** FAIL — Significant execution gaps prevent behavior replication
+✗ **Form-filling sequence never started** — Only initial "+ button" tap executed (1/9 steps = 11% coverage)
+
+✗ **Root cause:** ViBR compared segment 1 start state against wrong reference baseline (segment 0 end state instead of expected post-tap form state), triggering false state mismatch
+
+✗ **Recovery failed:** Recovery logic repeatedly tapped Save button (wrong element) instead of re-detecting form input fields
+
+✗ **Cascade:** All form input steps (8 total) were skipped; recipe never saved
+
+**Bottom line:** State consistency check false negative prevented form-filling workflow from starting; recovery mechanism lacked intelligence to re-analyze live screen and select appropriate form input targets.

@@ -1,99 +1,212 @@
 {
   "video_summary": {
     "app_name": "binaryeye",
-    "overall_goal": "Test QR code scanner functionality and settings",
+    "overall_goal": "User explores the BinaryEye barcode scanner app settings by opening the menu and navigating to the settings screen",
     "device_type": "Android",
-    "description": "User interacts with BinaryEye scanner app, navigates between scanner and settings screens."
+    "description": "15-second video showing user interaction with BinaryEye app: starting at scan screen, opening menu, and browsing through settings options"
   },
   "steps": [
     {
       "step_number": 1,
-      "timestamp_start": 0,
-      "timestamp_end": 2,
-      "screen_name": "ScannerActivity",
-      "what_screen_is_visible": "Scanner camera view",
+      "timestamp_start": "00:00:00",
+      "timestamp_end": "00:00:01",
+      "screen_name": "Scan Screen",
+      "what_screen_is_visible": "BinaryEye main camera scan screen with title 'Scan code', dark theme, loading indicator (green circle) visible in center-bottom area",
       "visible_ui_elements": [
-        "Camera",
-        "Controls"
+        "Header with time 9:15 and status icons",
+        "Title text 'Scan code' at top left",
+        "Menu icon (three dots) at top right",
+        "Plus icon and other toolbar icons",
+        "Green circular loading indicator",
+        "Bottom navigation with small indicators"
       ],
       "user_gesture": "wait",
-      "target_element": "Ready",
-      "system_response": "Initialized",
+      "target_element": "scan screen",
+      "system_response": "Screen remains on scan view, loading indicator visible",
       "navigation_change": "none",
       "data_entered": "",
-      "visual_feedback": "None",
-      "intent_task": "View scanner",
+      "visual_feedback": "Loading indicator spinning",
+      "intent_task": "User is waiting at the scan screen",
       "confidence": "high"
     },
     {
       "step_number": 2,
-      "timestamp_start": 2,
-      "timestamp_end": 4,
-      "screen_name": "ScannerActivity",
-      "what_screen_is_visible": "Menu accessed",
+      "timestamp_start": "00:00:01",
+      "timestamp_end": "00:00:02",
+      "screen_name": "Scan Screen with Hand",
+      "what_screen_is_visible": "Same scan screen, user hand now visible on right side of screen, appears to be reaching toward menu",
       "visible_ui_elements": [
-        "Menu options"
+        "All elements from previous frame",
+        "User hand visible on screen"
       ],
-      "user_gesture": "tap",
-      "target_element": "Menu",
-      "system_response": "Menu open",
+      "user_gesture": "screen_transition",
+      "target_element": "screen",
+      "system_response": "Hand appears on screen (physical interaction capture)",
       "navigation_change": "none",
       "data_entered": "",
-      "visual_feedback": "Menu visible",
-      "intent_task": "Access options",
-      "confidence": "medium"
+      "visual_feedback": "Hand position visible",
+      "intent_task": "User preparing to interact with menu",
+      "confidence": "high"
     },
     {
       "step_number": 3,
-      "timestamp_start": 4,
-      "timestamp_end": 10,
-      "screen_name": "SettingsActivity",
-      "what_screen_is_visible": "Settings screen",
+      "timestamp_start": "00:00:02",
+      "timestamp_end": "00:00:03",
+      "screen_name": "Menu Screen",
+      "what_screen_is_visible": "Menu dropdown opened showing options: 'Switch camera', 'Scan continuously', 'Restrict format', 'Find code', 'Settings', 'Info', 'Profile: Default'",
       "visible_ui_elements": [
-        "Settings options"
+        "Menu options list with blue text on dark background",
+        "User hand still visible touching/pointing toward settings",
+        "Status bar at top"
       ],
-      "user_gesture": "screen_transition",
-      "target_element": "Settings",
-      "system_response": "Loaded",
-      "navigation_change": "none",
+      "user_gesture": "tap",
+      "target_element": "menu icon",
+      "system_response": "Menu dropdown appears with 7 visible options",
+      "navigation_change": "menu_opened",
       "data_entered": "",
-      "visual_feedback": "Settings shown",
-      "intent_task": "View settings",
+      "visual_feedback": "Menu appears with smooth animation",
+      "intent_task": "User opens app menu to access settings",
       "confidence": "high"
     },
     {
       "step_number": 4,
-      "timestamp_start": 10,
-      "timestamp_end": 15,
-      "screen_name": "ScannerActivity",
-      "what_screen_is_visible": "Back to scanner",
+      "timestamp_start": "00:00:03",
+      "timestamp_end": "00:00:04",
+      "screen_name": "Settings Screen - Initial View",
+      "what_screen_is_visible": "Settings screen opened with 'Settings' header, 'Profile' section showing 'Profile Default', 'Scan' section showing 'Barcode formats' with detailed list of supported formats, and various toggles below",
       "visible_ui_elements": [
-        "Camera view"
+        "Back arrow button at top left",
+        "Settings title at top",
+        "Profile section with user icon",
+        "Scan section with barcode icon",
+        "Barcode formats expandable item showing: 'Aztec, Codabar, CODE 128, CODE 32, CODE 39 EXT, Code 39 Std, CODE 93, Data Bar, DATA BAR EXP STK, DATA BAR EXPANDED, DATA BAR OMN, DATA BAR STK, DATA MATRIX, DX FILM EDGE, EAN 13, EAN 8, ITF, MaxiCode, MICRO QR CODE, PDF 417, PZN, QR CODE, rMQR CODE, UPC A, UPC E'",
+        "Show cropping limiter toggle (green/enabled)",
+        "Show crosshairs toggle (blue/disabled)",
+        "Swipe up/down to zoom toggle (green/enabled)",
+        "Hand touching screen area"
       ],
-      "user_gesture": "screen_transition",
-      "target_element": "Scanner",
-      "system_response": "Returned",
-      "navigation_change": "back",
+      "user_gesture": "tap",
+      "target_element": "Settings menu item",
+      "system_response": "Settings screen navigates into view with details section",
+      "navigation_change": "navigate_to_settings",
       "data_entered": "",
-      "visual_feedback": "Camera visible",
-      "intent_task": "Resume scanning",
+      "visual_feedback": "Settings screen slides in",
+      "intent_task": "User navigates to settings to explore options",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "00:00:04",
+      "timestamp_end": "00:00:05",
+      "screen_name": "Settings Screen - Scrolled",
+      "what_screen_is_visible": "Settings screen scrolled down, showing barcode format options, Show cropping limiter, Show crosshairs (disabled), Swipe up/down to zoom (enabled), Recognize vertical 1D barcodes (enabled), Optimize reader for accuracy (disabled), Scan continuously (disabled), Delay between continuous scans options",
+      "visible_ui_elements": [
+        "Back arrow",
+        "Settings title",
+        "All toggle switches with various states",
+        "Icon indicators for each setting",
+        "Descriptive text under each option",
+        "Hand on screen"
+      ],
+      "user_gesture": "scroll_down",
+      "target_element": "settings list",
+      "system_response": "Content scrolls to reveal more options",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "List scrolls smoothly",
+      "intent_task": "User scrolls to see more settings options",
+      "confidence": "high"
+    },
+    {
+      "step_number": 6,
+      "timestamp_start": "00:00:05",
+      "timestamp_end": "00:00:06",
+      "screen_name": "Settings Screen - Further Scrolled",
+      "what_screen_is_visible": "Settings page scrolled further, now showing mid-section options including various toggles for Show cropping limiter, Show crosshairs, Swipe up/down to zoom, Recognize vertical 1D barcodes, Optimize reader for accuracy, Scan continuously, Delay between continuous scans",
+      "visible_ui_elements": [
+        "Same structure with slightly different portion of list visible",
+        "Back arrow and title still visible",
+        "Multiple icon-option-description rows",
+        "Toggle switches in various states",
+        "Hand on right side"
+      ],
+      "user_gesture": "scroll_down",
+      "target_element": "settings list",
+      "system_response": "Additional options become visible through scrolling",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Smooth scrolling animation",
+      "intent_task": "Continue exploring settings by scrolling",
+      "confidence": "high"
+    },
+    {
+      "step_number": 7,
+      "timestamp_start": "00:00:06",
+      "timestamp_end": "00:00:10",
+      "screen_name": "Settings Screen - Continuous Scrolling",
+      "what_screen_is_visible": "Settings continues to scroll showing more options: Show data in continuous mode (enabled), Vibrate on detection (enabled), Beep on detection (disabled), Beep tone (General beep), Beep audio stream, and more options below",
+      "visible_ui_elements": [
+        "Multiple settings with icons on left, text, and toggles/values on right",
+        "Settings for notification preferences (vibration, beep)",
+        "Audio-related settings",
+        "Accessibility options",
+        "Hand visible on right side"
+      ],
+      "user_gesture": "scroll_down",
+      "target_element": "settings list",
+      "system_response": "More settings options revealed, list scrolls continuously",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Continuous smooth scrolling",
+      "intent_task": "User continues scrolling through all available settings",
+      "confidence": "high"
+    },
+    {
+      "step_number": 8,
+      "timestamp_start": "00:00:10",
+      "timestamp_end": "00:00:15",
+      "screen_name": "Settings Screen - Bottom Section",
+      "what_screen_is_visible": "Settings screen scrolled to show lower sections, displaying: Show metadata (enabled), Show hex dump (enabled), Show checksum (disabled), Show recreated barcode (enabled), Go back after copying or sharing (disabled), Open unknown data in (Always ask), Open unknown data with URL, Automated actions (No automated actions), Remove network suggestions (description visible), Generation section with Brighten screen (disabled), Language section with Custom language (Follow system settings)",
+      "visible_ui_elements": [
+        "Back arrow still visible at top",
+        "Settings title",
+        "Multiple toggle options with various states",
+        "Text options with current selections",
+        "Section headers: 'Generation', 'Language'",
+        "Icons for each setting category",
+        "Hand on right edge"
+      ],
+      "user_gesture": "scroll_down",
+      "target_element": "settings list",
+      "system_response": "Scrolls to show final/lower settings options",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Final scroll animations",
+      "intent_task": "User explores all available settings in the application",
       "confidence": "high"
     }
   ],
   "detected_action_types": [
+    "wait",
     "tap",
+    "scroll_down",
     "screen_transition"
   ],
   "overall_flow": [
-    "Scanner",
-    "Menu",
-    "Settings",
-    "Back to Scanner"
+    "User starts at BinaryEye scan screen with loading indicator visible",
+    "User opens menu by tapping menu icon",
+    "User selects Settings from menu options",
+    "User scrolls through Settings screen multiple times to explore all available configuration options",
+    "Settings explore various categories: Profile, Scan formats, Display toggles, Notification settings, Data display options, and Language settings"
   ],
   "human_readable_step_summary": [
-    "Scanner active",
-    "Access menu",
-    "View settings",
-    "Return to scanner"
+    "App loads with scan screen displayed and loading indicator active",
+    "User hand visible preparing to interact with screen",
+    "Menu dropdown opens showing multiple app options including Settings",
+    "User taps Settings, navigating to the Settings screen showing Profile and Barcode format options",
+    "User scrolls down to view more scan-related settings (cropping limiter, crosshairs, zoom, 1D barcodes, accuracy optimization)",
+    "User continues scrolling to see additional settings in the middle of the list",
+    "User scrolls further to view notification and audio settings (vibration, beep, beep tone, audio stream)",
+    "User scrolls to bottom of Settings showing metadata, hex dump, checksum, language, and generation options"
   ]
 }

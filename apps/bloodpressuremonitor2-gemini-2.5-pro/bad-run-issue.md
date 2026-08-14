@@ -1,153 +1,202 @@
-# ViBR Run Analysis: bloodpressuremonitor2 (bad run)
+# Blood Pressure Monitor 2 (Bad Run) — ViBR Execution Analysis
+
+## Log Summary
+
+**Timeline** (filtered logs, starting after GroundingDINO load at 02:34:08):
+
+| Timestamp | Module | Event |
+|-----------|--------|-------|
+| 02:34:13 | dino_detection | DINO output annotated for segment 0 |
+| 02:34:22 | __main__ | Relevant regions empty; predicted action: wait |
+| 02:34:31 | __main__ | State alignment attempt 1/3 initiated |
+| 02:34:42 | execute_action | [1] Wait for graph and data to load → wait |
+| 02:34:55 | __main__ | State alignment attempt 2/3 initiated |
+| 02:35:08 | execute_action | [1] Wait for graph and data to finish loading → wait |
+| 02:35:21 | __main__ | State alignment attempt 3/3 initiated |
+| 02:35:34 | execute_action | [1] Wait for data to load → wait |
+| 02:35:46 | __main__ | **SKIP ACTION 0**: Reference shows graph + data; current shows "not enough data" + different UI (tabs vs table) |
+| 02:35:51 | dino_detection | DINO output annotated for segment 1 |
+| 02:36:00 | __main__ | Relevant regions: [6]; predicted action: tap |
+| 02:36:08 | __main__ | State alignment attempt 1/3 initiated |
+| 02:36:16 | execute_action | [1] Tap graph icon button → tap (recovery attempt 1) |
+| 02:36:27 | __main__ | State alignment attempt 2/3 initiated |
+| 02:37:19 | __main__ | Tap back arrow (recovery attempt 2); then tap graph icon (recovery attempt 3) |
+| 02:37:49 | __main__ | **SKIP ACTION 1**: Reference shows dashboard + graphs; current shows data entry form (two distinct screens) |
+
+**Interpretation:**
+ViBR segmented the video into 2 scenes correctly. Segment 0 depicts initial empty graph state and predicts a wait action, but fails alignment 3 times due to fundamental state mismatch: the reference video frame shows data/graphs present, but device initially shows "not enough data" screen. Segment 1 correctly identifies a tap action (add button), but after 3 recovery attempts, ViBR gives up because the target screen (statistics/graphs) conflicts with current execution state (data entry form). Root cause: **ViBR's segmentation extracted video frames showing the final statistics screen as the action target, but did not detect the intermediate form-filling steps**, creating an impossible alignment scenario.
+
+---
 
 ## Executive Summary
 
-**Ground Truth:** 6 expected steps (input systolic → input diastolic → submit → view results chart)
-**Actually Executed:** 0 actions (incomplete/failed)
-**Gap:** 6 steps missing (0% execution rate)
-
-The bad run achieved complete execution failure. ViBR segmented the video into 3 segments but failed to execute any actions. Root cause: **GUI state mismatch at segment 0** — ViBR detected an empty data state ("not enough data to draw a graph") that contradicts the ground truth input sequence. The app appears to have entered a fundamentally broken state mid-execution, preventing action completion.
+- **Expected steps (from video truth):** 5 major interactions: wait → tap FAB → fill form (3 fields + note) → submit → view stats
+- **Executed steps (from ViBR log):** 0 actions completed
+- **Coverage:** 0/5 steps (0%)
+- **Root issue:** Segmentation missed intermediate steps; ViBR detected only 2 scene boundaries instead of 5+, conflating form-entry activity into one segment with contradictory start/stop states
 
 ---
 
 ## Ground Truth vs Execution Log
 
-| Step # | Expected Action | Executed | Status | Issue Category |
-|--------|-----------------|----------|--------|-----------------|
-| 1 | Tap systolic input field | ✗ | Skipped | GUI state mismatch — empty data |
-| 2 | Enter systolic (120) via keyboard | ✗ | Skipped | Cascading from Step 1 |
-| 3 | Tap diastolic input field | ✗ | Skipped | Cascading from Step 1 |
-| 4 | Enter diastolic (80) via keyboard | ✗ | Skipped | Cascading from Step 1 |
-| 5 | Submit blood pressure reading | ✗ | Skipped | Cascading from Step 1 |
-| 6 | View results chart | ✗ | Failed attempt in Seg 1 | GUI state mismatch — form vs chart |
+| Step# | Expected Action | Video Shows | ViBR Segment | ViBR Status | Issue |
+|-------|-----------------|-------------|--------------|-------------|-------|
+| 1 | Wait for graph screen | Empty graph, "Not enough data" message | Seg 0 start | Predicted wait | No action because state doesn't match end frame |
+| 2 | Tap add button (FAB) | User taps blue FAB | Seg 0→1 transition | Detected tap, region [6] | Attempted recovery 3x, then skipped |
+| 3 | Fill systolic/diastolic/pulse | User types 122, 78, 72 | Seg 1 middle (missed) | Not detected | Hidden in segment 1 without action |
+| 4 | Add note "polu" | User types text | Seg 1 middle (missed) | Not detected | Hidden in segment 1 without action |
+| 5 | Submit form & navigate | Save pressed, stats shown | Seg 1 end | Not executed | Form never filled, so no submit possible |
 
 ---
 
-## Segmentation Analysis
+## Video vs Log Comparison
 
-ViBR detected 3 segments from 1938 video frames (video ~32 seconds @ 1fps):
+**Frame Timeline vs Log Events:**
 
-- **Segment 0:** Frames 0–1546 (longest, ~25 seconds) — Should contain input entry flow
-- **Segment 1:** Frames 1550–1629 (~1 second) — Potential submission/transition  
-- **Segment 2:** Frames 1633–1936 (~5 seconds) — Results chart display
+| Frame Range | Content Observed | Log Shows | Gap |
+|-------------|-----------------|-----------|-----|
+| 0–2 (0–2s) | Graph screen, "not enough data" | Segment 0 start, predict wait | ✓ Aligned |
+| 2–5 (2–5s) | FAB tap, form opens | Segment 1 detected, predict tap | ✓ Aligned |
+| 5–15 (5–15s) | User fills form (Sys, Dia, Pulse, Note) | Segment 1 body (treated as single wait/hold) | **✗ Gap:** ViBR logs no fill actions; video shows active typing |
+| 15–32 (15–32s) | Submit & statistics screen | Segment 1 end (skipped) | **✗ Gap:** ViBR never reached save/transition |
 
-### Segment 0 Failure (Frames 0–1546)
-
-**What happened:**
-- ViBR analyzed starting frame and decided: `predicted_action: 'wait'` (no relevant regions detected)
-- ViBR then compared reference (expected state) to live (actual device state)
-- **Mismatch detected:** Reference shows graph + data list. Live shows **"not enough data to draw a graph"** message with no data.
-
-**Log evidence:**
-```
-[02:35:46] [WARNING] Skipping action: current GUI state does not match start state. 
-Mismatch reason: the reference screen displays a graph and a list of data points, 
-while the current screen shows a message "not enough data to draw a graph" 
-and no data list. this indicates a fundamentally different state where data is 
-present in one case and absent in the other.
-```
-
-**Root cause interpretation:**
-- Ground truth video shows a user entering BP values and receiving a successful result (graph with data).
-- Bad run video **shows the same app in the same state, but the app itself is broken:** it refuses to accept input and remains stuck at "no data" message.
-- ViBR correctly identified this mismatch, but **did not understand that the reference frame itself represents a failed/empty app state**—not a target state to achieve.
+**Hidden Actions Detected:**
+- Form-filling steps (3 separate inputs + note entry) were not recognized as distinct actions; they appeared to ViBR as one continuous segment without state transitions
+- Keyboard interactions masked intermediate screen state changes
+- No keyboard dismiss/state-change detection between field entries
 
 ---
 
-## Segment 1 Failure (Frames 1550–1629)
+## Detailed Failure Analysis
 
-ViBR attempted recovery by finding an alternative action (tap graph icon button), but all 3 recovery attempts failed:
+### Failure 1: Segment 0 — State Alignment Impossible
 
-**Recovery Attempts:**
-1. **Try 1:** Tapped "graph icon button" at (939, 1518) → state did not align
-2. **Try 2:** Tapped "back arrow" at (74, 137) → state did not align  
-3. **Try 3:** Tapped "graph icon button" again at (939, 1716) → state did not align
+**Expected:** Wait action completes; next action is tap FAB to open form.
 
-**Final skip reason:**
-```
-[02:37:49] [WARNING] Skipping action: current GUI state does not match start state. 
-Mismatch reason: the reference image shows a dashboard with graphs and metrics, 
-while the current image shows a data entry form. these are two distinct screens 
-with different functionalities and ui elements.
-```
+**What ViBR saw:**
+- Reference image: `step_0v_tmp_stop.png` (from video frame marking segment 0 end)
+- Live screenshots: `step_0e_screenshot_[0-3].png` (device screenshots after 3 wait + retry attempts)
+- Log: *"reference screen displays a graph and a list of data points, while the current screen shows a message 'not enough data to draw a graph'"* (line 160)
 
-ViBR was bouncing between two incompatible screens: results dashboard and input form, unable to stabilize.
+**Root cause:** The video segment boundary was placed at a frame where data/graphs ARE present (showing successful data load). But the device starts with empty state. ViBR correctly predicted "wait," but the reference frame chosen represents the **end state after all actions**, not the intermediate state during the wait. This is a **segmentation boundary error**: the segment marked "segment 0 stop" should align with a device screenshot, but instead aligns with a video frame from deep in the sequence.
+
+**Category:** **Phase 1.4 — Scene Detection**: Incorrect grouping/boundary placement. Fixed threshold or CLIP similarity caused ViBR to mark a frame deep into the form-filling sequence as segment 0 end, when it should have ended immediately after the graph appears empty.
+
+### Failure 2: Segment 1 — Recovery Loop Exhausted
+
+**Expected:** Tap FAB → form opens → (user fills form) → submit → statistics screen.
+
+**What ViBR saw:**
+- Segment 1 start: Form entry screen (after FAB tap)
+- Predicted action: Tap to navigate to graph/statistics
+- Region detected: [6] (likely the add/FAB button or a chart icon)
+- Recovery attempts 1–3: Tried different coordinates (939, 1518), back arrow (74, 137), alternate coordinate (939, 1716)
+- Result: All attempts failed to match reference state (dashboard with graphs)
+
+**Why it failed:**
+1. ViBR segmented the entire form-filling sequence (5–15s) as one scene boundary
+2. No intermediate actions detected between "tap FAB" (segment boundary) and "form filled" (next segment boundary)
+3. Recovery logic attempted to navigate **away** from the form (tap back, tap graph icon) to reach the expected next state (statistics), but this is the wrong recovery strategy: the form must be filled first
+4. After 3 exhausted attempts, ViBR gave up and skipped the action (line 195)
+
+**Why recovery failed:** Log line 182 shows ViBR tried to identify recovery regions, but the device remained on the form screen. Recovery attempted navigation (back, graph icon taps) instead of recognizing the form must be completed first.
+
+**Category:** **Phase 1.4 — Scene Detection** (primary): Video shows 5 distinct interactive steps, but CLIP + fixed threshold (0.95) grouped form-filling into one segment. **Phase 3.10 — GUI Perception** (secondary): ViBR misunderstood the device state during recovery—it saw a form but expected a statistics screen, leading to navigation attempts that were semantically wrong.
 
 ---
 
 ## Root Cause Categorization
 
-### Stage 2: GUI State Comparison (6 failures)
+### Primary: Phase 1.4 — Scene Detection (Over-Grouping)
 
-**Dynamic/Session-Specific Content (Primary):**
-- The "bad" video captures an app in a broken state: persistently empty data, inaccessible input.
-- Ground truth assumes functional input flow, but the device was in a fundamentally different state.
-- The app did not transition as expected; data entry did not produce data accumulation.
-- **Confidence: HIGH** — Log explicitly states GUI mismatch between "data present" and "no data" states.
+**Issue:** CLIP embeddings did not detect sufficient visual difference between:
+- Frame showing FAB tap / form opening
+- Frames showing form fields being filled (text entry with keyboard)
+- Frame showing form submitted / statistics screen
 
-**Semantic Gap (Secondary):**
-- ViBR's state comparison logic expects reference and live frames to align structurally.
-- When they don't (empty vs. populated), ViBR skips the action to avoid undefined behavior.
-- This is **correct conservative behavior**, but highlights a deeper issue: the bad run captured an app that never transitioned out of the empty state.
+**Evidence:**
+- Video duration: 32s
+- CLIP-detected segments: 2 (instead of 5+)
+- Segment 0: ~0–5s (graph → form open)
+- Segment 1: ~5–32s (entire form-fill + submit + stats, all merged into one)
+
+**Why CLIP failed:** The blood pressure monitor's UI has subtle changes:
+1. **Keyboard appearance/disappearance** does not trigger a strong visual boundary (same form still visible, just with keyboard overlay)
+2. **Field focus changes** (blue outline on different input) are color-only modifications, potentially below CLIP's threshold
+3. **Form field values** (text content) are text-level, not image-level changes; CLIP does not weight text changes heavily
+4. **Statistics screen** has similar color scheme/layout structure to form (dark theme, scrollable content), reducing embedding distance
+
+**Impact:** Impossible for ViBR to execute form-filling steps because it never recognized them as separate actions.
+
+### Secondary: Phase 2.7 — State Consistency Check (False Negative)
+
+**Issue:** ViBR's state comparisons used GPT-4o to evaluate whether reference and live screenshots matched. Both comparisons correctly identified mismatches, but the recovery logic was semantically wrong.
+
+**Evidence (log lines 160, 195):**
+- Segment 0: Correctly flagged mismatch (graph vs no-graph)
+- Segment 1: Correctly flagged mismatch (form vs statistics), but recovery strategy was wrong—tried navigation instead of form completion
+
+**Category:** **Phase 3.11 — Action Inference**: Given the mismatch, ViBR inferred "navigate to the statistics screen" via back/graph-icon taps, rather than "complete the form that is currently visible."
+
+### Tertiary: Phase 3.9 — Action Space Definition
+
+**Issue:** ViBR's action vocabulary does not include intermediate user gestures during form entry:
+- Tap to focus field (recognized)
+- Type numeric/text content (not in execution loop)
+- Close keyboard (not triggered)
+- Tap next/submit button (conflated with final navigation)
+
+ViBR's vocabulary is structured around navigation actions (tap, swipe, back, wait), not data-entry actions (type, fill field, scroll form).
 
 ---
 
 ## Impact Assessment
 
-### Why Full Execution Failed
+**Why full execution failed:**
 
-1. **Segment 0 — Blocked at start:** Detected app empty state, no data input entry possible.
-   - ViBR correctly refused to proceed with actions into an unmapped state.
-   - User sees "not enough data to draw a graph" — input form may not have been receptive.
+1. **Segmentation error locked out form-filling:** ViBR never detected the form-filling steps as separate actions. Instead, it conflated 10 seconds of typing into the segment's "wait" state.
 
-2. **Segments 1–2 — Cascading failure:** With no actions executed in Segment 0, Segments 1–2 had no preconditions met.
-   - ViBR attempted emergency recovery (tapping alternative UI buttons) but could not escape the empty data state.
-   - Both dashboard and input form were unreachable or broken.
+2. **State alignment cascaded to recovery failure:** Once ViBR reached segment 1's end state (statistics) in the reference video but saw a form on the device, all 3 recovery attempts failed because the recovery logic tried navigation (semantically wrong) instead of form completion.
 
-3. **App-Level Failure (Most Likely):**
-   - The "bad" video captures the app in a genuinely broken state:
-     - Input may have been disabled, rejected, or never recorded.
-     - Data storage layer may be inaccessible.
-     - UI state machine may have frozen or looped.
+3. **Action vocabulary mismatch:** ViBR predicted "wait" for segment 0 (correct conceptually) but had no way to execute "wait for graph to fully load after form submission." The expected next action (form-fill) was never detected.
 
----
+4. **Zero actions executed:** Because no segment action was ever fully validated, ViBR skipped both segments and exited with 0/2 actions completed.
 
-## Video vs Ground Truth Alignment
-
-The discrepancy suggests one of two scenarios:
-
-**Hypothesis A: App Crash / Disabled State**
-- The bad run video shows the user *attempting* to input values (frames 0–1546 show keyboard presence).
-- However, the device/app rejected or ignored input, leaving the app in "no data" state.
-- ViBR correctly detected this and halted to avoid blind tapping.
-
-**Hypothesis B: Video Capture Artifact**
-- The video may capture a restarted or reset app state, not a true "bad run" but rather a comparison artifact.
-- The ground truth assumes a clean app state; the bad run started in an unknown state.
-
-Either way, **the gap is real and non-recoverable by ViBR's current logic**.
+**Cascade effect:**
+- Segmentation error → boundary misalignment
+- Boundary misalignment → impossible state consistency
+- Impossible state consistency → recovery exhausted
+- Recovery exhausted → skip action, move to next segment
+- Next segment inherits device state inconsistency from previous skip → repeat failure
 
 ---
 
 ## Conclusions
 
-The bad run achieved **0% execution of ground truth steps**. 
+**Coverage:** 0% (0/5 steps executed)
 
-Primary failure mode: **Dynamic/Session-Specific Content (Stage 2)** — The app's data state (empty vs. populated) did not match expectations. ViBR correctly refused to proceed, preventing cascading failures but also preventing any progress.
+**Dominant failure mode:** Over-grouping in segmentation phase. CLIP embedding similarity threshold (0.95) was insufficient to distinguish intermediate form-filling steps from the continuous form-entry scene.
 
-Secondary factor: **Missing state recovery logic** — ViBR's recovery attempts focused on UI element tapping but did not address the root cause: the app was fundamentally unable to accept input in the captured state. More sophisticated recovery would require:
-- App restart / state reset detection
-- Conditional backtracking to a known-good state
-- Timeout escalation to force state transitions
+**Underlying limitation:** 
+1. **CLIP's visual grounding is layout-centric, not content-centric.** Text input changes (field focus, keyboard overlay, text content) do not produce large embedding shifts because the overall spatial layout (form structure) remains constant.
+2. **Action vocabulary assumes navigation-based workflows.** Form-filling, data-entry, and text-input workflows require a different detection strategy (e.g., frame-to-frame keyboard state tracking, OCR-based field-value change detection).
+3. **Segmentation algorithm static threshold (0.95) does not adapt to app-specific UI patterns.** Blood pressure monitor uses persistent forms with subtle state changes; a more sensitive threshold (0.85–0.90) or dynamic per-app threshold tuning would likely help.
 
-The bad run is **not a ViBR bug but evidence of a malfunctioning device or app state**. ViBR's conservative approach (skip action if state misaligned) is correct; the underlying issue is environmental.
+**Remedies for future runs:**
+- Reduce CLIP similarity threshold to 0.85–0.90 for form-heavy apps
+- Add keyboard state tracking (appears/disappears) as a boundary signal
+- Extend action vocabulary to include form interactions (type, submit)
+- Implement OCR-based detection of field value changes
+- Train a task-specific model for healthcare/data-entry app workflows
 
 ---
 
-## TL;DR — Why It Failed
+## TL;DR
 
-**Failure reason:** GUI state mismatch — app stuck in "no data" state
-- **Evidence:** Log shows `"not enough data to draw a graph"` vs. expected graph + data
-- **Impact:** Input form unreceptive or app data layer broken; no actions could proceed
+| Aspect | Finding |
+|--------|---------|
+| **Status** | Failed completely (0/5 steps) |
+| **Why** | CLIP over-grouped form-filling into single segment; segmentation boundary mismatch caused impossible state alignment; recovery logic exhausted after 3 attempts |
+| **Stage** | Phase 1.4 (Scene Detection) — insufficient threshold sensitivity for data-entry workflows |
+| **Bottom line** | Form-filling workflows with subtle keyboard/focus changes fall below CLIP's detection threshold; a more sensitive algorithm or task-specific thresholding is required |
 
-**Bottom line:** ViBR correctly detected a broken app state and halted execution. The bad run video captures the app in a fundamentally different state than the good run—not a segmentation or action inference error, but evidence the app or device malfunctioned during the bad run recording.
