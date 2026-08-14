@@ -1,0 +1,188 @@
+ViBR RUN REVIEW
+===============
+
+CURRENT OBJECTIVE
+Find what is going wrong in ViBR runs.
+
+RUN NOTES
+---------
+- MPS issue: CLIP was working on CPU instead of GPU, taking excessive time
+- Scan other videos one by one
+- Target: Solution to resolve one problem by next week
+
+APP REVIEWS
+===========
+
+ADAWAY
+------
+Good-quality video (6/8 steps)
+  • Attempted to align state 3 times
+  • Unable to input text properly
+
+Bad-quality video (2/8)
+  • DINO failed to identify the Allowed Card Section (finger blocked detection)
+  • Finger in keyframe blocked DINO labeling
+  • See: apps/adaway-gemini-2.5-pro/bad-artifacts/step_0v_dino.png
+  • Issue: Phase 2 GUI State Comparison - Region Detection Grounding DINO
+
+ANTENNAPOD
+----------
+Bad-quality video
+  • Video started on fdroid screen (extra step to open app)
+  • Finger clicked Queue Tab, but DINO recognized bottom gesture bar as relevant region
+
+BAKERS PERCENTAGE CALCULATOR
+-----------------------------
+Good-quality video (6/8 steps)
+  • srv-001: Unable to find relevant regions, attempting to align with current state
+  • srv-002: Short video, failed to recognize 3 actions
+
+Bad-quality video
+  • hhv-001: Did not recognize frames properly
+
+Good-quality video (additional)
+  • Root cause: segment_replay.py crashes on index out of bounds (segment 2+)
+  • Happens when video has fewer frames than expected
+  • Segment found = 2 (more than expected, fewer frames)
+
+Bad-quality video (bad-video1) (2/9)
+  • Unable to enter text in Recipe Name, Ingredient Name, Notes fields
+  • Failed to save recipe as result
+
+Bad-quality video (bad-video2)
+  • CLIP segmentation threshold (0.95) too high
+  • Treats menu/dialog/screen overlays as same scene
+  • Lumps 3 steps into one segment
+  • Frame extraction grabs wrong boundary frame, skips segment 0 entirely
+  • Fix: Lower threshold to 0.85-0.90 OR require 3+ consecutive stable frames (not just 1)
+  • Note: Lowering to 0.85 + raising interval to 3 collapsed entire video into single segment
+  • CLIP now treats all 4 steps as one continuous scene (threshold too permissive)
+
+Good-quality video (good-video2)
+  • DINO correct, recognized to click three dots (top right)
+  • Cannot see in execution
+  • LLM returned hardcoded coordinates [540, 147] instead of element text/description
+  • Code fell back to position-based matching, found wrong element
+  • Tap missed or hit unintended button → app state collapsed (recipe list → empty)
+
+Bad-quality video (bad-video3)
+  • Step-0-v end frame skipped text input field screens
+  • Step-0-v unable to identify correct click region
+  • Step-0-e: all three screenshots show same screen
+  • DINO detected no UI elements in graph area (main screen)
+  • Actual action: click FAB, but DINO did not detect it
+  • LLM did not click FAB as result
+  • Possible reasons: DINO detection threshold too high, LLM prompt didn't instruct "if no elements, check FABs"
+  • Video changes did not detect input screens
+
+BILY
+----
+Good-quality video
+  • srv-001: DINO labeling correct, but labeled regions themselves incorrect
+
+Bad-quality video
+  • hhv-001: Incorrectly labeling regions in emulator, unable to find correct region
+
+BRETHAP
+-------
+Good-quality video (6/10)
+  • Start/stop cycles executed successfully for breathing sessions
+  • Step 6 issue: Unable to detect click on hamburger menu (left navigation pane)
+  • Diverged after step 6
+
+Bad-quality video (0/10)
+  • CLIP extracted video starting from step 6
+  • First DINO image has navigation menu already open
+  • State mismatch → ViBR cannot proceed from start
+  • Key findings:
+    - Segment 0 (frames 0-1002) extremely stable
+    - Average similarity: 0.9979 (near perfect)
+    - Min similarity: 0.9556 (just above 0.95 threshold)
+    - Frames below threshold: 0 (none)
+    - Design confirmed: frames 0-1002 are one stable scene
+    - Only 1004-1006 transition dips below 0.95
+    - Skipping 0-1002 makes sense: no changes, just hand/phone positioning noise
+
+BREATHAP
+--------
+Good-quality video
+  • Labeling not done properly
+  • Many states with identical screens
+  • No valid region or element match, proceeding without position
+
+Bad-quality video
+  • (Notes pending)
+
+HOMEMEDKIT
+----------
+Good-quality video (1/10)
+  • ViBR correctly recognized to click add button
+  • Tool clicked Settings instead
+  • Went into loop trying to recover to aligned state
+  • Video moved to next frames even though state not aligned
+
+Bad-quality video (0/10)
+  • Start screen mismatch with emulator start
+  • Attempted to reach aligned state
+  • Recovery compared with wrong state
+  • Cascading state mismatches occurred
+  • Key findings:
+    - 0% execution rate (0/10 expected steps)
+    - Root cause: Cascading state mismatches from initial boundary error
+    - Segment 0 references Play Store, device already has app open
+    - Coordinate drift in segment 1 (add button tap fails)
+    - Category: Stage 2 GUI State Comparison failure (dynamic content + coordinate drift)
+    - Impact: Segments 0-3 all failed/skipped, recovery exhausted after 3 retries per segment
+
+Bad-quality video (bad-video2)
+  • (Notes pending)
+
+HOMERAUDIOPLAYER
+----------------
+Bad-quality video (0/10)
+  • Root cause: Stage 2 GUI state mismatch (expanded UI divergence) + cascading segment failures
+  • Coverage: 60% execution (3/5 actions)
+  • Segmentation failure explanation:
+    - CLIP similarity high across menu frames (low visual variance)
+    - Menu = stable region, not a transition
+    - Segmentation finds boundaries (sharp changes), not content types
+    - Menu frames blend into broader segment without distinct boundary
+
+JIGSAW
+------
+Bad-quality video (bad-video1) issues i found:
+  - the start stop frames are 
+
+WIFI ANALYZER
+-------------
+Bad-quality video (3/9)
+  • Unable to proceed to next steps due to:
+    - Failed to find relevant regions to click
+    - LLM returned region that did not exist in discovered regions
+
+Detailed failure analysis:
+  • Segment 1: LLM selects [11] but annotation says "No relevant regions"
+    - DINO only detected 0-10 (11 boxes total, indices 0-10)
+  • Segment 2: LLM selects [1] but annotation says "No relevant regions"
+    - DINO detected 0 boxes OR boxes have no index 1
+
+Real issue:
+  • Line 197 filter: if r["index"] in relevant_indices
+  • When LLM returns index 11 but DINO only has 11 detections [0-10]:
+    - Key 11 doesn't exist
+    - Annotation image is blank
+    - LLM gets blank image, doesn't know valid regions
+    - LLM guesses wrong
+
+Two-liner explanation:
+  • Segment 1: DINO found 11 boxes [0-10], LLM returns index 11 (doesn't exist)
+    - Annotation filter fails silent
+  • Segment 2: DINO found boxes, LLM returns index 1
+    - Index 1 not in DINO results (filtered during detection)
+    - Annotation blank, LLM guesses wrong region, lookup fails at execution
+
+Good-quality video (1/10)
+  • DINO images not annotated correctly
+  • Every step takes 3 steps to align (produces many intermediary steps)
+  • Got stuck after step one due to wrong state
+  • Unable to recover to base state
