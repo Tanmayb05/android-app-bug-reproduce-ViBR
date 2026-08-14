@@ -1,181 +1,197 @@
-# ViBR Run Analysis: bloodpressuremonitor3 (bad run)
+# BloodPressureMonitor3 Bad-Run Issue Analysis
+
+## Log Summary
+
+Timeline of key events from execution log (filtered for signal, excluding infrastructure logs):
+
+| Time | Module | Event |
+|------|--------|-------|
+| 02:38:27 | model_api | Selected provider: gemini |
+| 02:38:27 | check_video.orchestrator | ⚠️ Video not SDR BT.709; converting from yuv420p10le |
+| 02:38:51 | check_video.orchestrator | Conversion done; video is now SDR BT.709 |
+| 02:38:51 | __main__ | Starting video processing (algorithm=clip) |
+| 02:38:51 | __main__ | Initializing ADB device controller |
+| 02:39:01 | __main__ | Detecting stable segments via CLIP |
+| 02:41:28 | __main__ | CLIP analysis complete: 3 segments detected |
+| 02:41:28 | __main__ | Segment boundaries: [(0, 1546), (1550, 1629), (1633, 1936)] |
+| 02:41:35 | dino_detection | Loading GroundingDINO model |
+| 02:41:47 | __main__ | **Segment 0: No relevant regions detected** → predict action: wait |
+| 02:41:54 | __main__ | ⚠️ State alignment attempt 1/3 failed |
+| 02:42:06 | execute_action | Execute: [1] Wait for graph data to load |
+| 02:42:21 | __main__ | ⚠️ State alignment attempt 2/3 failed |
+| 02:42:32 | execute_action | Execute: [1] Wait for graph to load |
+| 02:42:44 | __main__ | ⚠️ State alignment attempt 3/3 failed |
+| 02:42:54 | execute_action | Execute: [1] Wait for graph data to load |
+| 02:43:07 | __main__ | **SKIP: GUI state mismatch** — reference shows graph+data, current shows "insufficient data" message |
+| 02:43:12 | __main__ | Segment 1: Region 4 detected → predict action: tap |
+| 02:43:21 | dino_detection | GroundingDINO identified region 4 (graph button) |
+| 02:43:44 | __main__ | Execute: [1] Tap button with graph icon @ (446, 779) |
+| 02:43:44 | __main__ | Action executed; video processing completed |
+
+**Interpretation:** ViBR detected 3 segments but processed only 2 (segment 0 and 1). In segment 0, DINO found no interactive regions; ViBR predicted "wait" and retried state alignment 3 times. All 3 alignment attempts failed with the same mismatch: reference frame expected a graph with data entries, but device showed "insufficient data" message and different button layout (3 buttons instead of 2). After exhausting retries, ViBR skipped segment 0 and moved to segment 1, where it successfully identified and tapped the graph icon. Overall: 1 action executed out of ~5 expected from video analysis.
+
+---
 
 ## Executive Summary
 
-**Ground Truth:** 6 expected steps (navigate dashboard → statistics → systolic/diastolic/pulse tabs → metrics by time of day)
-**Actually Executed:** 1 step executed (single tap on graph icon)
-**Gap:** 5 steps missing (16.7% execution rate)
+**Expected vs. Actual Execution:**
+- **Truth value steps (from video):** 5 major steps
+  1. Initial chart view (waiting/observation)
+  2. Tap add button → open data entry form
+  3. Enter measurement data (date, time, systolic, diastolic, pulse)
+  4. Type note in optional field
+  5. Navigate to statistics view
+- **Steps executed by ViBR:** 1 (tap graph icon in statistics view)
+- **Steps missing:** 4 (add button tap, data entry, note typing, form submission)
+- **Coverage:** 20% (1 of 5 expected actions)
 
-The bad run achieved minimal execution coverage. ViBR detected 2 processable segments but skipped the primary action in segment 0 due to GUI state mismatch, then executed only 1 tap in segment 1. Root cause: **dynamic content mismatch** — the reference video shows graph data displayed, but the bad run video shows "Not enough data to draw a graph" state, causing ViBR to reject the action as unsafe.
-
----
-
-## Ground Truth vs Execution Log
-
-| Step # | Expected Action | Executed | Status | Issue Category |
-|--------|-----------------|----------|--------|-----------------|
-| 0 | Navigate to Statistics screen (implicit start state) | ✗ | Skipped | Dynamic/session-specific content |
-| 1 | View Systolic distribution (implicit in stats screen) | ✗ | Skipped | Dynamic/session-specific content |
-| 2 | Tap Diastolic tab | ✗ | Skipped | Dynamic/session-specific content |
-| 3 | Tap Pulse tab | ✗ | Skipped | Dynamic/session-specific content |
-| 4 | Scroll to Metrics by Time of Day | ✗ | Skipped | Dynamic/session-specific content |
-| 5 | View polar chart (final state) | ✗ | Skipped | Dynamic/session-specific content |
-| 6 | Tap graph icon (segment 1 action) | ✓ | Success | — |
+**Root cause:** ViBR's segment 0 (covering the add record dialog and form entry flow) failed state alignment 3 times due to GUI mismatch. Reference frame expected a populated chart view, but the device showed an empty chart with "insufficient data" message. This mismatch prevented ViBR from detecting and executing the add button tap and subsequent form interactions. Segment 1 executed successfully (tap graph button), but this was out of sequence and did not replay the intended user workflow.
 
 ---
 
-## Video vs Log Comparison
+## Ground Truth vs. Execution Log
 
-### Segment 0 (Frames 0–1546, ~25.8 seconds)
+| Step# | Expected Action (Truth) | ViBR Executed | Status | Category |
+|-------|-------------------------|---------------|--------|----------|
+| 1 | Wait/observe initial chart view | — | SKIP | State Mismatch |
+| 2 | Tap add button (plus icon) | — | SKIP | State Mismatch |
+| 3 | Enter systolic/diastolic/pulse | — | SKIP | State Mismatch |
+| 4 | Type note in optional field | — | SKIP | State Mismatch |
+| 5 | Navigate to statistics view | Tap graph button | ✓ | Executed (partial) |
 
-| Frame Range | Segment | Log Shows | Video Shows | Gap? |
-|-------------|---------|-----------|-------------|------|
-| 0–1 | Seg 0 start | Wait for state alignment | App UI with "not enough data" message (dark theme) | ⚠️ YES |
-| 1–8 | Seg 0 progress | Attempt state alignment (retry 1/3) | Keyboard visible, user actively typing/entering data | ⚠️ YES |
-| 8–16 | Seg 0 progress | Attempt state alignment (retry 2/3) | Keyboard still open, user interaction ongoing | ⚠️ YES |
-| 16–24 | Seg 0 progress | Attempt state alignment (retry 3/3) | Keyboard still open, user typing | ⚠️ YES |
-| 24–25.8 | Seg 0 end | Action skipped: GUI state mismatch (reference has graph, current has "not enough data") | Screen still shows no-data state | ✓ Aligned |
+**Key finding:** ViBR detected segment 1 (statistics view) but skipped segment 0 (data entry form) entirely. Segment 0 accounted for ~75% of the video (frames 0–1546) and contained the core user workflow. Skipped due to persistent GUI state mismatch on device vs. reference.
 
-**Key Observations:**
-- **Hidden user action:** User manually entered data via keyboard throughout segment 0, but ViBR never executed this action. Log shows `wait` commands but video shows active user interaction.
-- **State mismatch root cause:** Reference screenshot (from good run) shows graph data; bad run shows empty state. ViBR correctly rejected action as unsafe but missed that user was manually recovering by entering data.
-- **Timing gap:** Log shows ~3 retry attempts over 24+ frames; video confirms keyboard was visible the entire time, indicating data entry was in progress.
+---
 
-### Segment 1 (Frames 1550–1629, ~80 frames)
+## Video vs. Log Comparison
 
-| Frame Range | Segment | Log Shows | Video Shows | Gap? |
-|-------------|---------|-----------|-------------|------|
-| 1550–1629 | Seg 1 | Detect relevant region (tap on graph icon) | Keyboard closes, screen transitions to show polar chart visualization | ✓ Aligned |
-| 1629–1936 | Seg 2 (skipped in log) | Not processed | Polar chart fully visible with 24-hour distribution (teal/cyan colors) | — |
+**Frame segments extracted from video:**
+- Frames 0–32 (1 fps): complete user interaction from initial chart → form entry → statistics view
+- **Segment 0 frames (approx. 0–15 based on CLIP segmentation):** Chart view + add dialog + form entry
+- **Segment 1 frames (approx. 16–20):** Form completion (note typing, possible systolic clear)
+- **Segment 2 frames (approx. 21–32):** Statistics view
+
+**Log shows:**
+- Segment 0 (frames 0–1546): DINO detected no regions. Model predicted `wait`. Three state alignment retries, all failed.
+- Segment 1 (frames 1550–1629): DINO detected region 4 (graph button). Model predicted `tap`. Executed successfully.
+- Segment 2 (frames 1633–1936): Not processed in log (only 2 of 3 segments marked in steps_taken).
+
+**Mismatch interpretation:**
+- Log: "current screen displays 'not enough data to draw a graph' and has no data listed, whereas reference screen shows a graph and a list of data entries"
+- Video shows: User successfully tapped add button, entered data, and navigated to statistics view
+- Hypothesis: Reference frame for segment 0 was likely extracted from the **start** of segment 0 (initial chart view), but as user interacted, screen transitioned to add dialog (not present in reference). State alignment failed because the expected chart+data was never visible during the form entry portion of segment 0.
 
 ---
 
 ## Detailed Failure Analysis
 
-### Step 0–5: Navigation and Tab Switching — SKIPPED
+### Failure 1: Segment 0 State Alignment (3x retry exhausted)
 
-**Expected behavior (ground truth):**
-> User navigates to Statistics screen and sequentially views Systolic, Diastolic, and Pulse value distributions, then scrolls to view Metrics by Time of Day (polar chart).
+**Expected behavior (from video):**
+- Frame 0: Chart view with "insufficient data" message (matches ViBR's perceived device state)
+- User taps + button
+- Dialog opens with data entry form
+- User enters data, form changes state
+- Dialog may close or transition occurs
 
-**What the log shows:**
-> Segment 0 processing:
-> ```
-> Comparing state: reference=step_0v_relevant_regions.png vs live=step_0e_screenshot_0.png
-> Attempting to align state (try 1/3)...
-> Wait for the graph data to load. -> wait
-> 
-> Comparing state (recovery attempt 1): reference=step_0v_tmp_stop.png vs live=step_0e_screenshot_1.png
-> Attempting to align state (try 2/3)...
-> Wait for the graph to load. -> wait
-> 
-> Comparing state (recovery attempt 2): reference=step_0v_tmp_stop.png vs live=step_0e_screenshot_2.png
-> Attempting to align state (try 3/3)...
-> Wait for the graph data to load. -> wait
-> 
-> Comparing state (recovery attempt 3): reference=step_0v_tmp_stop.png vs live=step_0e_screenshot_3.png
-> Skipping action: current GUI state does not match start state. Mismatch reason: the current 
-> screen displays a message 'not enough data to draw a graph' and has no data listed, whereas the 
-> reference screen shows a graph and a list of data entries. additionally, the floating action 
-> buttons are different; the current screen has three buttons (settings, graph, and plus), while 
-> the reference screen has only two (settings and plus).
-> ```
+**Actual ViBR behavior:**
+- DINO found no interactive regions in segment 0 reference frame
+- Model predicted action: `wait`
+- Attempted state alignment 3 times:
+  - Try 1: Compare reference (step_0v_relevant_regions.png) vs live (step_0e_screenshot_0.png)
+  - Try 2: Compare step_0v_tmp_stop.png vs step_0e_screenshot_1.png
+  - Try 3: Compare step_0v_tmp_stop.png vs step_0e_screenshot_2.png
+- All 3 failed with: "current screen shows 'insufficient data' message with no data, reference shows graph with data entries"
+- Decision: SKIP action (state never aligned)
 
-**Mismatch reason:**
-> GUI state comparison detected critical difference: reference (good run) shows data-populated dashboard with graph visualization; current (bad run) shows "Not enough data to draw a graph" message. ViBR made 3 alignment attempts, each issuing `wait` command, but state never aligned.
+**Root cause category:**
+- **Phase 2: GUI State Comparison** — specifically **2.7. State Consistency Check**
+  - False negative: ViBR's reference frame expected post-data state (chart with populated data), but device never transitioned to that state during segmentation
+  - **Underlying issue:** Video input artifact or CLIP segmentation boundary incorrectly placed reference frame at an intermediate state (add dialog open) instead of the stable start state (chart view with data)
 
-**Root cause:** **Dynamic/session-specific content** — the bad run video captures a device state where blood pressure measurement data is absent or has not yet loaded. The reference video assumes pre-existing data. This is not a ViBR bug; it is a legitimate state divergence.
+**Evidence:**
+- DINO output: "No relevant regions to annotate" — indicates reference frame had no clickable elements
+- GPT mismatch reason: explicit state difference (missing data in current vs. present in reference)
+- Expected interaction (tapping add button) was never attempted because reference frame assumed a different starting state
 
-- **Evidence:** Log line 160 explicitly states: "current screen displays a message 'not enough data to draw a graph' and has no data listed, whereas the reference screen shows a graph and a list of data entries."
-- **Why it matters:** Because segment 0 represents the primary navigation flow (tapping to access statistics), skipping it blocks all downstream tab-switching and scrolling actions. Cascading failure: 5 dependent steps cannot execute.
+### Failure 2: Segment 1 Executed Out of Order
 
-### Step 6: Tap Graph Icon — EXECUTED
+**What happened:**
+- Segment 1 (frames 1550–1629) successfully detected region 4 (graph button)
+- ViBR executed tap at (446, 779)
+- This transitioned device to statistics view
 
-**Expected behavior (secondary, inferred):**
-> User may tap graph icon to open statistics or alternative view.
-
-**What the log shows:**
-> Segment 1 processing:
-> ```
-> Relevant regions: {'target_regions': [4], 'predicted_action': 'tap'}
-> GPT selected regions: [4]
-> Replay using region index: 5 at (446, 779)
-> Action executed: [1] Tap the button with the graph icon. -> tap
-> ```
-
-**What video shows:**
-> Frame 1550–1629: Keyboard closes, screen transitions. By frame 1629, polar chart is visible, indicating the app navigated to or updated the view. Tap was successful in changing screen state.
-
-**Root cause:** None — action executed as planned.
-
-- **Evidence:** Action completed, screen state changed (keyboard → chart).
-- **Why it succeeded:** Segment 1 had clear, unambiguous UI state matching.
+**Why this is a problem:**
+- Segment 0 (the add record dialog and data entry) was supposed to run first
+- Segment 1 and 2 depend on segment 0 completing successfully
+- Executing segment 1 bypassed the entire form submission workflow
+- Result: Device shows statistics view without new data being added
 
 ---
 
 ## Root Cause Categorization
 
-### Stage 1: Action Segmentation (0 failures)
-- Over-segmentation: 0
-- Dynamic element false boundary: 0
+### Phase 2: GUI State Comparison (Primary)
 
-**Verdict:** Segmentation was correct. CLIP detected 3 segments and clamped boundaries appropriately.
+**2.7. State Consistency Check — False Negative**
+- **Count:** 3 occurrences (3 retry attempts)
+- **Issue:** Reference frame expected a chart view with data, but device screen showed "insufficient data" message
+- **Reason:** CLIP segmentation boundary (frame split at 1546→1550) may have placed reference frame snapshot at an intermediate state or the reference was compared against a different device state than the video's ground truth
+- **Impact:** ViBR abandoned segment 0 after 3 failed retries, preventing all form interactions
 
-### Stage 2: GUI State Comparison (5 failures)
-- **Dynamic/session-specific content:** 5
-  - Reference assumes pre-existing blood pressure data (graph visible)
-  - Bad run has empty state ("Not enough data to draw a graph")
-  - No root UI differences (buttons, layout, theme) — pure data absence
+**2.5. Region Detection (GroundingDINO) — Missed Elements**
+- **Count:** 1 occurrence (segment 0)
+- **Issue:** DINO found "No relevant regions to annotate" in segment 0
+- **Reason:** Add button likely became invisible or non-interactive in the reference frame (possibly due to timing artifact or video frame extraction)
+- **Impact:** No regions detected → action space empty → model defaulted to `wait` (safe but unproductive)
 
-### Stage 3: Bug Replay on Device (0 failures)
-- Semantic gap: 0
-- Masked intermediate transition: 0
+### Phase 1: Action Segmentation (Secondary)
 
-**Verdict:** ViBR correctly identified and refused to replay on mismatched state. This is defensive behavior, not a bug.
-
----
-
-## Video vs Log Deep Dive: Hidden User Action
-
-**Critical finding:** Video shows user entering data via keyboard (frames 1–24) while log shows ViBR issuing `wait` commands.
-
-- **Frame 0–1:** App starts in no-data state.
-- **Frame 1–24:** User's finger visible on keyboard, typing blood pressure values manually.
-- **Log:** ViBR observes no-data state, issues `wait`, never detects keyboard or user action.
-
-**Interpretation:**
-> ViBR's reference is a good run with pre-loaded data. The bad run is a fresh/reset device state. The user manually recovered by entering data in real-time (visible in video), but ViBR's state alignment logic only saw the mismatch, not the recovery action. This is a **data availability gap**, not a ViBR algorithm failure.
+**1.3. Similarity Computation — Incorrect Grouping**
+- **Count:** 1 (possible)
+- **Issue:** 3 segments detected, but boundary placement at frames 1546/1550/1633 may reflect false transitions
+- **Evidence:** Segment 0 (0–1546) is 80% of total video, yet represents only initial view + form interaction
+- **Possible cause:** CLIP similarity threshold (0.95) may have been too strict; consecutive frames in form entry (data → clear field → statistics) show GUI changes that triggered false boundaries
 
 ---
 
 ## Impact Assessment
 
-**Execution gap:** 5 steps (83.3% coverage loss)
+**Cascade failure:**
+1. Segment 0 state alignment failed 3x → skipped entirely
+2. Segment 1 executed in isolation (graph button tap) → navigated to statistics view
+3. Segment 2 never processed (log shows only 2 of 3 segments in steps_taken)
+4. Intended workflow (add record) incomplete; device shows statistics without new entry
 
-**Cascading failure chain:**
-1. Segment 0: Skipped due to data mismatch → primary navigation blocked
-2. Dependent steps (tabs, scroll): Cannot execute without completing segment 0
-3. Segment 1: Executed as fallback (tap graph icon)
-4. Segment 2: Not processed (beyond scope)
-
-**Prevention:**
-- Segment 0 represents a state that **cannot reliably be matched** between a pre-populated reference (good run) and a fresh device (bad run).
-- Future runs should either: (a) pre-populate test data on device, (b) use reference videos from similar starting states, or (c) accept that data-dependent apps require synchronized device state.
+**Prevention required:**
+- Robust reference frame selection (ensure stable start state, not intermediate transitions)
+- Fallback heuristics for "no regions" scenarios (e.g., scan full frame for tap-able elements, not just DINO regions)
+- Segment boundary validation (detect false transitions caused by fast UI changes, form field updates, keyboard visibility)
 
 ---
 
 ## Conclusions
 
-The bad run achieved 16.7% execution (1/6 steps) due to a **data availability mismatch**, not algorithmic failure. ViBR correctly detected that the device state diverged from the reference and refused to proceed (safe behavior). The video evidence confirms this: the bad run starts with an empty dataset while the good run assumes pre-existing data.
+**Coverage:** 20% of expected actions executed (1 of 5 steps).
 
-**Root cause (academic):** ViBR's state-matching pipeline relies on visual equivalence between reference and live screenshots. When reference assumes populated application state and live reflects an empty/reset state, alignment fails. This is a **domain-level data inconsistency**, not a vision or segmentation error.
+**Dominant failure mode:** GUI state mismatch in Phase 2 (State Consistency Check). The model's reference frame expected a populated chart view, but the device screen showed an empty chart with insufficient data message. This mismatch persisted across 3 retry attempts, exhausting the recovery strategy and forcing ViBR to skip the entire data entry segment.
 
-**Severity:** Medium. The single executed action (tap graph icon) succeeded, so ViBR did not produce an incorrect interaction. However, the workflow was incomplete due to upstream state mismatch.
+**Underlying limitation:** ViBR's state alignment logic assumes reference and live frames should match within the same segment. However, in this video:
+- Segment 0 spans multiple distinct UI states (initial chart → add dialog → form with data)
+- CLIP segmentation placed the boundary such that the reference frame expected post-data state, not the pre-action state
+- DINO's region detection failed to identify the add button in the context of the reference frame
+
+**Academic insight:** The failure demonstrates a fundamental challenge in video-based UI automation: **temporal alignment mismatch**. CLIP detects scene changes (major transitions), but does not account for **intra-scene state transitions** (e.g., form field changes, dialog overlays, keyboard appearance). When such transitions occur within a segment, the model's reference frame (typically at segment start) may not match the ground truth of what that segment "should" accomplish.
+
+**Recommendation:** Future work should incorporate multi-frame references per segment or use dynamic state tracking (e.g., observe consecutive frames to detect intermediate transitions and adapt action space accordingly).
 
 ---
 
-## TL;DR — Why It Failed
+## TL;DR
 
-**Failure reason:**
-- **Dynamic/session-specific content (5 failures):** Reference video (good run) assumes blood pressure measurement data exists. Bad run video shows empty state ("not enough data to draw a graph"). ViBR detected mismatch and correctly refused to proceed, skipping segment 0 (primary navigation). Video confirms user manually entered data via keyboard during segment 0, but ViBR's state alignment did not detect this recovery action.
-
-**Bottom line:** ViBR executed safely by rejecting a mismatched state, but the mismatch arose from data availability, not UI differences. The bad run could not follow the good run's flow because it started from a fresh/empty device state. One fallback action (tap graph icon) succeeded in segment 1.
+- **Success:** 1 action (tap graph button) executed
+- **Failures:** 4 actions skipped (add button, form entry, note typing, form submission)
+- **Coverage:** 20%
+- **Root cause:** Segment 0 state alignment failed 3x due to GUI mismatch (reference expected chart+data, device showed "insufficient data" message)
+- **Category:** Phase 2.7 (State Consistency Check) — false negative; reference frame and live state assumed different app state
+- **Bottom line:** ViBR skipped the entire data entry workflow due to reference-frame mismatch during state alignment, demonstrating the brittleness of fixed reference frames in fast-transitioning UIs.

@@ -1,0 +1,214 @@
+{
+  "video_summary": {
+    "app_name": "brethap1",
+    "overall_goal": "Demonstrate a complete breathing exercise session with navigation to sessions history",
+    "device_type": "Android",
+    "description": "User starts Brethap app, taps 'Press Start', runs breathing exercise (inhale/exhale cycles), pauses/returns to start screen, restarts breathing exercise, then taps hamburger menu to open navigation drawer and navigate to Sessions screen to view past breathing sessions."
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "timestamp_start": "0:00",
+      "timestamp_end": "0:01",
+      "screen_name": "start_screen",
+      "what_screen_is_visible": "Brethap app start screen with blue 'Press Start' button, timer showing '0:02:00', title 'Brethap' in header",
+      "visible_ui_elements": [
+        "Header with title 'Brethap'",
+        "Central 'Press Start' button",
+        "Large timer display '0:02:00'",
+        "Status bar with time '9:20'"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Press Start button",
+      "system_response": "App transitions to breathing exercise screen",
+      "navigation_change": "start_screen -> breathing_exercise",
+      "data_entered": "",
+      "visual_feedback": "Screen transitions to breathing mode with 'Inhale' instruction and animated circle",
+      "intent_task": "Start a 2-minute breathing exercise session",
+      "confidence": "high"
+    },
+    {
+      "step_number": 2,
+      "timestamp_start": "0:01",
+      "timestamp_end": "0:07",
+      "screen_name": "breathing_exercise",
+      "what_screen_is_visible": "Brethap breathing exercise screen with 'Inhale' instruction, animated blue circle (expanding/contracting), timer counting down from ~0:01:59 to ~0:01:54",
+      "visible_ui_elements": [
+        "Header with hamburger menu icon (≡) and title 'Brethap'",
+        "Instruction text 'Inhale' or 'Exhale'",
+        "Animated breathing circle (blue dot)",
+        "Timer display (minutes:seconds format)",
+        "Status bar"
+      ],
+      "user_gesture": "wait",
+      "target_element": "Breathing animation",
+      "system_response": "App runs breathing cycle: Inhale phase (circle expands), Exhale phase (circle contracts), timer counts down",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Blue circle animates in sync with breathing instructions, timer decrements, instruction text alternates between 'Inhale' and 'Exhale'",
+      "intent_task": "Follow breathing exercise prompts for duration of session",
+      "confidence": "high"
+    },
+    {
+      "step_number": 3,
+      "timestamp_start": "0:07",
+      "timestamp_end": "0:08",
+      "screen_name": "start_screen",
+      "what_screen_is_visible": "Returns to start screen: 'Press Start' button, timer reset to '0:02:00'",
+      "visible_ui_elements": [
+        "Header with title 'Brethap'",
+        "Central 'Press Start' button",
+        "Large timer display reset to '0:02:00'",
+        "Status bar"
+      ],
+      "user_gesture": "screen_transition",
+      "target_element": "None (automatic or external action)",
+      "system_response": "Breathing exercise session pauses/ends, app returns to idle start screen",
+      "navigation_change": "breathing_exercise -> start_screen",
+      "data_entered": "",
+      "visual_feedback": "Screen clears breathing UI, returns to start screen with reset timer",
+      "intent_task": "Session paused or terminated, return to start state",
+      "confidence": "medium"
+    },
+    {
+      "step_number": 4,
+      "timestamp_start": "0:08",
+      "timestamp_end": "0:10",
+      "screen_name": "start_screen",
+      "what_screen_is_visible": "Start screen idle (same as Step 3)",
+      "visible_ui_elements": [
+        "Header with title 'Brethap'",
+        "Central 'Press Start' button",
+        "Timer display '0:02:00'",
+        "Status bar"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Press Start button",
+      "system_response": "App transitions back to breathing exercise screen",
+      "navigation_change": "start_screen -> breathing_exercise",
+      "data_entered": "",
+      "visual_feedback": "Screen transitions to breathing mode again with 'Inhale' instruction and animated circle",
+      "intent_task": "Restart breathing exercise session",
+      "confidence": "high"
+    },
+    {
+      "step_number": 5,
+      "timestamp_start": "0:10",
+      "timestamp_end": "0:16",
+      "screen_name": "breathing_exercise",
+      "what_screen_is_visible": "Breathing exercise in progress: 'Inhale'/'Exhale' alternating, animated blue circle, timer counting down from ~0:01:57 to ~0:01:54",
+      "visible_ui_elements": [
+        "Header with hamburger menu (≡), title 'Brethap', status icons",
+        "Instruction text 'Inhale' or 'Exhale'",
+        "Animated breathing circle",
+        "Timer display",
+        "Status bar"
+      ],
+      "user_gesture": "wait",
+      "target_element": "Breathing animation",
+      "system_response": "Breathing cycle continues as before",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Circle animates, instructions alternate, timer counts down",
+      "intent_task": "Continue breathing exercise",
+      "confidence": "high"
+    },
+    {
+      "step_number": 6,
+      "timestamp_start": "0:16",
+      "timestamp_end": "0:17",
+      "screen_name": "navigation_drawer",
+      "what_screen_is_visible": "Navigation drawer opened from breathing exercise: hamburger menu activated, drawer shows menu items: Preferences, Sessions, Calendar, About Brethap",
+      "visible_ui_elements": [
+        "Navigation drawer (left side panel)",
+        "Menu items: Preferences (gear icon), Sessions (list icon), Calendar, About Brethap (info icon)",
+        "Brethap logo/icon at top of drawer",
+        "Breathing activity visible in background (partially obscured)"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Hamburger menu icon (≡) in header",
+      "system_response": "Navigation drawer slides out from left side, revealing menu options",
+      "navigation_change": "breathing_exercise -> navigation_drawer",
+      "data_entered": "",
+      "visual_feedback": "Drawer slides in from left, covers part of the screen, menu items become tappable",
+      "intent_task": "Open navigation menu to access app sections",
+      "confidence": "high"
+    },
+    {
+      "step_number": 7,
+      "timestamp_start": "0:17",
+      "timestamp_end": "0:20",
+      "screen_name": "sessions_screen",
+      "what_screen_is_visible": "Sessions history screen: back arrow in header, title 'Sessions', list of past breathing sessions with dates and durations",
+      "visible_ui_elements": [
+        "Header with back arrow (←), title 'Sessions', status icons",
+        "Session list items with:",
+        "  - Date: 2026-05-01 9:20 PM",
+        "  - Duration: 0:00:07 (in blue)",
+        "  - Date: 2026-05-01 9:20 PM",
+        "  - Duration: 0:00:05",
+        "  - Date: 2026-03-24 11:36 AM",
+        "  - Duration: 0:00:03",
+        "Action buttons on right: 'Clear All', 'Backup', 'Restore', 'Export'",
+        "Status bar"
+      ],
+      "user_gesture": "tap",
+      "target_element": "Sessions menu item in navigation drawer",
+      "system_response": "App navigates to Sessions screen, displays list of past breathing sessions",
+      "navigation_change": "navigation_drawer -> sessions_screen",
+      "data_entered": "",
+      "visual_feedback": "Screen transitions to full sessions list, drawer closes, session history displayed with timestamps and durations",
+      "intent_task": "View history of past breathing exercise sessions",
+      "confidence": "high"
+    },
+    {
+      "step_number": 8,
+      "timestamp_start": "0:20",
+      "timestamp_end": "0:23",
+      "screen_name": "sessions_screen",
+      "what_screen_is_visible": "Sessions screen remains visible, list now appears empty or loading (last frame shows header only)",
+      "visible_ui_elements": [
+        "Header with back arrow, title 'Sessions'",
+        "Mostly empty content area",
+        "Status bar"
+      ],
+      "user_gesture": "wait",
+      "target_element": "None",
+      "system_response": "Sessions screen remains idle, no further navigation",
+      "navigation_change": "none",
+      "data_entered": "",
+      "visual_feedback": "Screen stays on sessions screen, content may be loading or user paused",
+      "intent_task": "View sessions list (ongoing)",
+      "confidence": "medium"
+    }
+  ],
+  "detected_action_types": [
+    "tap",
+    "wait",
+    "screen_transition"
+  ],
+  "overall_flow": [
+    "User launches Brethap app (already open, showing start screen)",
+    "Taps 'Press Start' button to initiate breathing exercise",
+    "App runs breathing cycle with visual (animated circle) and audio prompts (Inhale/Exhale)",
+    "Exercise auto-stops and returns to start screen after ~7 seconds",
+    "User immediately taps 'Press Start' again to restart exercise",
+    "Breathing exercise runs for ~6 seconds",
+    "User taps hamburger menu (≡) icon in header to open navigation",
+    "User selects 'Sessions' from drawer menu",
+    "App navigates to Sessions history screen showing past breathing sessions",
+    "Video ends with user viewing sessions list"
+  ],
+  "human_readable_step_summary": [
+    "Start screen displayed with 'Press Start' button and 2-minute timer",
+    "User taps 'Press Start' to begin breathing exercise",
+    "Breathing exercise runs for ~7 seconds with Inhale/Exhale cycles and animated blue circle guidance",
+    "App returns to start screen (exercise ended)",
+    "User taps 'Press Start' again to restart the breathing exercise",
+    "Second breathing session runs for ~6 seconds with same animation and instruction pattern",
+    "User taps hamburger menu icon (≡) to open navigation drawer during breathing",
+    "Navigation drawer shows menu options (Preferences, Sessions, Calendar, About Brethap)",
+    "User taps 'Sessions' menu item to navigate to session history",
+    "Sessions screen displays list of past breathing sessions with dates and durations (e.g., 2026-05-01, 2026-03-24)"
+  ]
+}

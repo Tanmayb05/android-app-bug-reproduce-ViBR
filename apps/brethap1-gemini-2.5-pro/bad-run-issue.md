@@ -1,115 +1,179 @@
-# ViBR Run Analysis: brethap1 (bad run)
+# Brethap1 Bad-Run Failure Analysis
+
+## Log Summary
+
+Filtered event timeline (after GroundingDINO load):
+
+| Time | Module | Event |
+|------|--------|-------|
+| 02:47:44 | dino_detection | Annotated DINO output saved |
+| 02:48:09 | __main__ | Relevant regions detected; GPT selected regions [2]; action=tap |
+| 02:48:09 | dino_detection | Relevant-only annotation saved |
+| 02:48:16 | __main__ | **Attempting to align state (try 1/3)** |
+| 02:48:32 | __main__ | Recovery matched element at (540, 960); Tap hamburger menu icon (top left) |
+| 02:48:34 | __main__ | Comparing state: reference=step_0v_relevant_regions.png vs live=step_0e_screenshot_1.png |
+| 02:48:40 | __main__ | **Attempting to align state (try 2/3)** |
+| 02:48:54 | __main__ | Recovery matched element at (540, 960); Tap hamburger menu icon (top left) |
+| 02:48:56 | __main__ | Comparing state (recovery attempt 2): reference vs live |
+| 02:49:02 | __main__ | **Attempting to align state (try 3/3)** |
+| 02:49:16 | __main__ | Recovery matched element at (540, 960); Tap hamburger menu icon (top left) |
+| 02:49:18 | __main__ | Comparing state (recovery attempt 3): reference vs live |
+| 02:49:25 | __main__ | **SKIPPING ACTION**: GUI state does not match. Reference = sessions screen with past sessions list; current = main start screen with 'Press Start' prompt and timer |
+| 02:49:25 | run_stats | Status: incomplete; Actions executed: 0; LLM calls: 9 |
+
+**Interpretation:** ViBR detected one action in the bad video (tapping hamburger menu), but the reference screenshot showed Sessions screen, while device showed Start screen. Three alignment retry attempts all failed. ViBR conservatively skipped the action due to safety check: "current state ≠ expected state, cannot safely proceed." This is the correct behavior for a replay agent, but it reveals the root bug: **action segmentation error in Phase 1**.
+
+---
 
 ## Executive Summary
 
-**Ground Truth:** 5 expected steps
-**Actually Executed:** 0 steps
-**Gap:** 5 steps missing (0% execution rate)
-
-Bad run failed immediately at segment 0, never executing any action. ViBR attempted to tap a hamburger menu icon 3 times with recovery attempts, but was blocked by a fundamental state mismatch: the bad video starts on the **main screen** ("Press Start"), while the reference state extracted from the good video was the **sessions menu screen** with a hamburger icon. ViBR's GUI state comparison correctly identified this incompatibility and aborted execution after exhausting recovery attempts.
+- **Expected steps (from ground truth):** 8 steps (tap Start, breathing, pause, tap Start again, breathing, tap menu, navigate Sessions, idle)
+- **Executed steps:** 0 actions on device
+- **Coverage:** 0% (0/8 steps)
+- **Gap count:** 8 steps missed
+- **Status:** Incomplete replay; safety abort
 
 ---
 
 ## Ground Truth vs Execution Log
 
-| Step # | Expected Action | Executed | Status | Issue Category |
-|--------|-----------------|----------|--------|-----------------|
-| 0 | Tap play button on main screen | ✗ | Failed | Semantic gap (state mismatch) |
-| 1 | Wait for breathing session to progress | ✗ | Skipped | Cascading failure |
-| 2 | Wait during inhale/exhale cycles | ✗ | Skipped | Cascading failure |
-| 3 | Wait until session timer completes | ✗ | Skipped | Cascading failure |
-| 4 | Automatic transition to sessions list | ✗ | Skipped | Cascading failure |
+| Step # | Expected Action | Executed ✓/✗ | Status | Issue Category |
+|--------|-----------------|-------------|--------|-----------------|
+| 1 | Tap 'Press Start' button to start breathing | ✗ | Not attempted | 1.4 Scene Detection |
+| 2 | Wait for breathing exercise (Inhale/Exhale cycles) | ✗ | Not attempted | 1.4 Scene Detection |
+| 3 | [Auto] Return to start screen | ✗ | Not attempted | 1.4 Scene Detection |
+| 4 | Tap 'Press Start' again to restart | ✗ | Not attempted | 1.4 Scene Detection |
+| 5 | Wait for second breathing session | ✗ | Not attempted | 1.4 Scene Detection |
+| 6 | Tap hamburger menu icon (≡) | ✗ Attempted 3x | Skipped (state mismatch) | **2.7 State Consistency Check** |
+| 7 | Navigate to Sessions screen | ✗ | Not attempted | 2.7 State Consistency Check |
+| 8 | View sessions history | ✗ | Not attempted | 2.7 State Consistency Check |
 
 ---
 
 ## Video vs Log Comparison
 
-Extracted frames from bad video at 1 fps (32 total frames, ~32 seconds duration):
+**Video Timeline (Ground Truth):**
 
-| Frame | Time | Log Event | Video Shows | Gap? |
-|-------|------|-----------|-------------|------|
-| 0001 | 00:00 | Segment 0 start | Main screen, finger about to tap play button | ✓ Match |
-| 0010 | 00:10 | Action inference phase | Breathing session in progress ("Inhale", blue circle, timer 0:01:56) | ✓ Match |
-| 0023 | 00:23 | Late in segment | Session ending, screen mostly blank | ✓ Match |
-| 0024 | 00:24 | Segment 0 end | Keyboard visible (input field active), different context | — |
+| Frame Range | Segment | Log Shows | Video Shows | Gap? |
+|-------------|---------|-----------|-------------|------|
+| 1-2 | Start screen → Press Start | (no log, pre-segmentation) | Start screen, timer 0:02:00 → Inhale instruction | **YES** — ViBR never segmented this action |
+| 2-7 | Breathing exercise (Inhale/Exhale) | (no log, pre-segmentation) | Animated circle, timer countdown 0:01:59→0:01:54 | **YES** — breathing phase missed entirely |
+| 8 | Screen returns to start | (no log) | Press Start button, timer reset to 0:02:00 | **YES** — transition missed |
+| 8-11 | Second "Press Start" tap + breathing restart | (no log) | Start screen → Inhale/Exhale visible | **YES** — second action not segmented |
+| 17-19 | Hamburger menu tap → drawer opens | ViBR attempted, skipped | Drawer with menu items (Preferences, Sessions, Calendar, About Brethap) visible | **PARTIAL** — ViBR detected action but rejected it |
+| 20-23 | Sessions screen navigation + view | (no log) | Sessions header, past session list visible | **YES** — never reached |
 
-**Key Observations:**
-
-1. **Correct video playback progression**: Video shows natural breathing session flow: main screen → tap play → session progresses → timer runs down → end state.
-2. **Reference state corruption**: ViBR extracted segment 0 from bad video but used a **reference screenshot from good video's post-session state** (hamburger menu visible on sessions screen).
-3. **State mismatch detection**: ViBR correctly identified the mismatch at line 163 of log: "reference image displays a 'sessions' screen... current image shows the main start screen."
-4. **Recovery attempts exhausted**: ViBR attempted 3 state alignment retries (lines 139–162), each time re-tapping coordinates (540, 960), which consistently failed to transition state.
+**Hidden Actions (not executed by ViBR but present in video):**
+- Frame 1→2: Tap "Press Start" (invisible to segmentation; likely merged into breathing animation)
+- Frame 8→11: Return to start + second "Press Start" tap (missed as separate segment)
+- Frame 17+: Tap menu + navigate Sessions (detected but rejected due to state mismatch)
 
 ---
 
 ## Detailed Failure Analysis
 
-### Step 0: Tap Play Button to Start Breathing Session — FAILED
+### Failure 1: Segmentation Missed First Action (Frames 1-2)
 
-**Expected behavior (ground truth):**
-> User taps the blue play button on the main screen. App transitions to a breathing session screen showing a large blue circle, timer (0:02:00), and "Session, 0 Breaths" label.
+**Expected:** Tap "Press Start" button at start of video
+**Video Shows:** Button visible, then immediately changes to Inhale instruction
+**Log Shows:** No action segmentation for this step
+**Root Cause (Category 1.3 or 1.4):** The "Press Start" tap may have been too brief or overlapped with animation transition:
+- Phase 1 (CLIP) likely failed to detect stable boundary before/after tap
+- High similarity between start screen and breathing instruction screen confused scene boundary detection
+- **Cascading impact:** Without detecting first action, all downstream steps are orphaned
 
-**What the log shows:**
-```
-[2026-06-12 02:48:09] Comparing state: reference=step_0v_relevant_regions.png vs live=step_0e_screenshot_0.png
-[2026-06-12 02:48:16] WARNING Attempting to align state (try 1/3)...
-[2026-06-12 02:48:32] Recovery matched element: '' at (540, 960)
-[2026-06-12 02:48:34] Comparing state (recovery attempt 1): reference=step_0v_tmp_stop.png vs live=step_0e_screenshot_1.png
-[2026-06-12 02:48:40] WARNING Attempting to align state (try 2/3)...
-[2026-06-12 02:48:54] Recovery matched element: '' at (540, 960)
-[2026-06-12 02:48:56] Comparing state (recovery attempt 2): reference=step_0v_tmp_stop.png vs live=step_0e_screenshot_2.png
-[2026-06-12 02:49:02] WARNING Attempting to align state (try 3/3)...
-[2026-06-12 02:49:16] Recovery matched element: '' at (540, 960)
-[2026-06-12 02:49:18] Comparing state (recovery attempt 3): reference=step_0v_tmp_stop.png vs live=step_0e_screenshot_3.png
-[2026-06-12 02:49:25] WARNING Skipping action: current GUI state does not match start state. Mismatch reason: the reference image displays a 'sessions' screen with a list of past sessions. the current image shows the main start screen of the app with a 'press start' prompt and a timer. these are two different screens with completely different functionalities.
-```
+### Failure 2: Entire Breathing Phase Not Segmented (Frames 2-7)
 
-**Mismatch reason:**
-ViBR's action planning inferred "tap the hamburger menu icon" as the next action (because segment 0 reference from good video showed that menu state). But the bad video's segment 0 started on the main screen, not the menu. The reference screenshot (`step_0v_relevant_regions.png`) was extracted from the good video's post-hamburger-tap state (sessions menu with drawer open), **not** the actual starting state of segment 0 in the bad video.
+**Expected:** Wait/play breathing animation cycle
+**Video Shows:** 5+ seconds of Inhale, small circle expansion, Exhale, contraction, timer countdown
+**Log Shows:** No step generated for this segment
+**Root Cause (Category 1.2 or 1.4):** 
+- Breathing animation creates **dynamic content** (animated circle) that may confuse CLIP embeddings
+- CLIP not trained on mobile animations; may embed similar frames too closely
+- Stable similarity threshold (0.95) may be too high/low for animation frames
+- **Cascading impact:** Breathing segment lumped with Start screen or merged incorrectly
 
-**Root cause:** Stage 3 (Bug Replay on Device) — Semantic Gap
-- Evidence: Log line 163 explicitly states mismatch between reference (sessions screen) and live (main screen).
-- Evidence: Recovery attempts targeted coordinates (540, 960), which is not a valid button on the main screen.
-- Why it matters: This blocks execution of all subsequent steps. The planner inferred an action based on a reference state that was incompatible with the actual starting context of the bad run.
+### Failure 3: Screen Return & Pause Not Detected (Frames 8-10)
+
+**Expected:** Auto-transition back to start screen (app behavior)
+**Video Shows:** Breathing screen → Start screen, timer reset
+**Log Shows:** No transition logged
+**Root Cause (Category 2.5 or 2.8):** 
+- App internally paused exercise; no user action triggered
+- ViBR segments based on user interactions; auto-transitions may be invisible to segmentation
+- XML parsing may not capture intermediate states during rapid transitions
+
+### Failure 4: Recovery Matched Wrong Region (State Mismatch)
+
+**Expected:** Tap hamburger menu on Sessions screen
+**Log Shows:** ViBR detected action (tap at 540, 960) but found Sessions screen reference, device showed Start screen
+**Video Shows:** At Frame 17, menu opens; hamburger icon is in header of **breathing exercise screen** (frame ~17), not start screen
+**Root Cause (Category 2.7 — State Consistency Check):**
+- **Critical Bug:** ViBR's first detected segment expected the **Sessions screen** (end state), not the **Start screen** (initial state)
+- This suggests Phase 2 (GUI state comparison) misidentified which screen was the "reference" for the first segment
+- GroundingDINO + GPT-4o may have hallucinated or mis-anchored the reference region
+- Device showed Start screen → ViBR's expected Sessions screen → **state mismatch → safety abort**
+- **Why?** ViBR likely tried to replay the last (Sessions screen) action as the first step, due to incorrect frame-to-action mapping in Phase 1
 
 ---
 
 ## Root Cause Categorization
 
-### Stage 1: Action Segmentation (0 failures)
-- Over-segmentation: 0
-- Dynamic element false boundary: 0
+### Phase 1: Action Segmentation Failures (Primary)
 
-### Stage 2: GUI State Comparison (0 failures)
-- Resolution/layout mismatch: 0
-- Cosmetic theme difference: 0
-- Transient artifact overlay: 0
-- Screen recording artifact: 0
-- Scroll-induced element shift: 0
-- Dynamic/session-specific content: 0
+| Sub-Category | Issue | Evidence | Count |
+|--------------|-------|----------|-------|
+| **1.2 CLIP Embedding** | Animated breathing circle confuses similarity computation | Breathing phase (Frames 2-7) produces continuous stream but no boundary detected | 1 |
+| **1.4 Scene Detection** | Missed initial tap + subsequent transitions | Start→Inhale, Pause→Start, Start→Sessions not segmented as separate scenes | 3 |
+| **Threshold sensitivity** | Fixed 0.95 threshold may not generalize to animation + app transitions | No frame clustering detected for dynamic content | 1 major |
 
-### Stage 3: Bug Replay on Device (1 failure)
-- Semantic gap: 1
-  - **Root issue**: ViBR extracted segment 0 reference from **good video's state** but applied it as the expected starting state for **bad video's segment 0**. The two videos have fundamentally different entry points (main screen vs. sessions menu), causing a cascading state mismatch.
-- Masked intermediate transition: 0
+### Phase 2: GUI State Comparison Failures (Secondary)
+
+| Sub-Category | Issue | Evidence | Count |
+|--------------|-------|----------|-------|
+| **2.7 State Consistency Check** | Reference/current state mismatch; expected Sessions, got Start | ViBR attempted action 3 times, each time state diff was "Sessions screen vs Start screen" | 1 critical |
+| **2.5 Region Detection** | GroundingDINO may have over-detected or hallucinated region in reference image | Recovery fallback matched element at (540, 960) which is incorrect for hamburger tap | 1 |
+
+---
+
+## Impact Assessment
+
+**Why Full Replay Failed:**
+
+1. **Segmentation broke early:** Frames 1-7 produced no actionable segments due to animation + transition confusion
+2. **First detected segment corrupted:** ViBR's Phase 2 expected a Sessions screen as the start reference, but device showed Start screen
+3. **Safety prevented blind execution:** Rather than tap blindly at wrong coordinates on wrong screen, ViBR correctly aborted after 3 retry attempts
+4. **Cascading failures:** No action executed → entire workflow orphaned
+
+**What Prevented Success:**
+
+- CLIP model poor at detecting boundaries near animations
+- Threshold (0.95) not adaptive across app domains
+- State reference misidentification in first segment (may be GroundingDINO or frame-to-action mapping bug)
+- No recovery strategy beyond coordinate-based fallback
 
 ---
 
 ## Conclusions
 
-The bad run achieved **0% execution** of ground truth. The single failure is a **semantic state mismatch** at the segment level. ViBR's segmentation algorithm (CLIP) correctly identified segment boundaries in the bad video, but the reference state used for initial action planning was extracted from the good video at an incompatible screen context.
+Brethap1 bad-run exhibits a **Phase 1 (Action Segmentation) failure with secondary Phase 2 (State Consistency) abort.** The breathing animation and rapid screen transitions confuse CLIP's similarity computation, leading to incorrect frame grouping. When ViBR attempted the one detected action (hamburger tap), the reference screen (Sessions) mismatched the device state (Start), triggering a conservative safety skip.
 
-This indicates a fundamental limitation in how ViBR handles **heterogeneous video contexts**. When two recordings of the same app start in different UI states, the frame-by-frame segmentation (CLIP similarity) may align temporal structure but not semantic state. ViBR's recovery mechanism (state alignment retries) was appropriate but insufficient, as the mismatch was not a transient UI difference but a structurally different starting condition.
+**Key finding:** The app's **dynamic animated content** (breathing circle) is a known limitation of CLIP-based segmentation (documented in ViBR paper Category 1.2). Additionally, **auto-state transitions** (app pausing exercise and returning to start) are not user-driven and fall outside ViBR's action-based segmentation model.
 
-The gap of **5 missing steps** is not due to action inference failures, UI detection issues, or timing problems—it stems from **incompatible reference context** between good and bad videos at the segment initialization level.
+**Coverage:** 0% (0 of 8 steps executed)
+
+**Dominant failure mode:** Segmentation boundaries lost during animation → reference state misidentification → safety abort
+
+**Underlying limitation:** CLIP embeddings insufficient for apps with sustained animations and rapid, auto-triggered state changes.
 
 ---
 
-## TL;DR — Why It Failed
+## TL;DR
 
-**Failure reason:**
-- **Semantic state mismatch**: Bad video starts on main screen ("Press Start" button). ViBR's reference state for segment 0 was extracted from good video's sessions menu screen. These are different apps states with different UI elements and interaction points.
-  - Evidence: Log explicitly identifies mismatch—reference shows "sessions screen with list," live shows "main start screen with press start prompt."
-  - Impact: Action planning (hamburger menu tap at 540,960) was invalid for the actual starting state. Recovery attempts failed because the target coordinate doesn't exist on the main screen. Execution aborted.
+- ✗ **Breathing animation**: CLIP failed to segment animated circle frames (Category 1.2 — embeddings drift during animation)
+- ✗ **Auto-transition**: App-initiated pause/return to start not captured (falls outside user-action-based model)
+- ✗ **Reference state mismatch**: First detected segment expected Sessions screen but device showed Start screen; 3 retries failed
+- ✗ **Result**: 0 actions executed; safety check prevented blind execution
+- **Root:** Segmentation boundary collapse → state reference corruption → safety abort
+- **Bottleneck:** CLIP model not robust to mobile animations + rapid self-driven state changes
 
-**Bottom line:** ViBR detected a valid state incompatibility and correctly aborted execution rather than executing wrong actions blindly. The root cause is incompatible entry states between reference (good) and target (bad) videos, not a failure of ViBR's state detection or recovery logic. This suggests a video capture or setup issue where the bad run recorded a different app initialization flow than the good run, violating the assumption that both recordings start in the same UI context.
