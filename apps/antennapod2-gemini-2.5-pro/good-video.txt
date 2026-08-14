@@ -1,9 +1,0 @@
-click on the upper three dots
-click on refresh
-go to more tab from the bottom menu
-click on settings
-click on playback
-disable "Headphones or Bluetooth disconnect"
-go back to Settings
-Click on Downloads
-enable "Delete removes from queue"
