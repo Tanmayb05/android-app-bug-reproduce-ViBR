@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Any
 
-from run_stats import record_llm_response
+from approach.core.run_stats import record_llm_response
 
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,106 @@
+# ViBR Configuration -- variant B (emulator-5556)
+# Full standalone config. Only `runs`, `adb.device_id`, and
+# `adb.ui_dump_local_path` differ from config.yml and the other variants.
+
+# Available app_name values:
+
+# amazefilemanager1, amazefilemanager2, ankidroid1, k91, k92, wordpress
+# Only the first uncommented entry is processed per run.
+runs:
+  # - bug_dir: "data/video01b-amazefilemanager#2595"
+  # - bug_dir: "data/video02b-amazefilemanager#2526"
+  # - bug_dir: "data/video03b-ankidroid#9005"
+  # - bug_dir: "data/video04b-ankidroid#8229"
+  # - bug_dir: "data/video05b-k9mail#5206"
+  # - bug_dir: "data/video06b-k9mail#5198"
+  # - bug_dir: "data/video07b-wordpress#15026"
+  # - bug_dir: "data/video08b-amazefilemanager#1978"
+  # - bug_dir: "data/video09b-ankidroid#7680"
+  # - bug_dir: "data/video10b-ankidroid#7695"
+  # - bug_dir: "data/video11b-ankidroid#7674"
+  # - bug_dir: "data/video12b-amazefilemanager#3207"
+  # - bug_dir: "data/video13b-ankidroid#8973"
+  # - bug_dir: "data/video14b-amazefilemanager#2647"
+  # - bug_dir: "data/video15b-markor#264"
+  # - bug_dir: "data/video16b-myexpenses#744"
+  # - bug_dir: "data/video17b-activitydiary#285"
+  # - bug_dir: "data/video18b-omninotes#745"
+  # - bug_dir: "data/video19b-scarletnotes#114"
+  # - bug_dir: "data/video20b-amazefilemanager#1796"
+  - bug_dir: "data/video21b-geohashdroid#73"
+  # - bug_dir: "data/video22b-antennapod#5636"
+
+model:
+  provider: "gemini"          # "openai" | "gemini"
+  openai_model: "gpt-4o"
+  gemini_model: "gemini-2.5-pro" # "gemini-2.5-flash" | "gemini-2.5-flash"
+  image_detail_start: "low"
+  image_detail_stop: "low"
+  image_detail_live: "high"
+
+segmentation:
+  algorithm: "clip"           # "ssim" | "clip"
+  ssim:
+    stable_sim_threshold: 0.95
+    stable_interval_threshold: 2
+  clip:
+    model: "openai/clip-vit-base-patch32"
+    stable_sim_threshold: 0.982
+    stable_interval_threshold: 1
+    frame_step: 1
+  cache_dir: "./cache"
+  leading_segment_min_frame: 2
+
+replay:
+  inter_segment_sleep: 0.5
+  max_state_alignment_retries: 3
+  post_recovery_sleep: 1.0
+  header_crop_px: 33
+  xml_parse_bound_margin: 10
+  xml_parse_min_center_distance: 20
+  min_elements_threshold: 5
+
+dino:
+  config_path: "GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py"
+  weights_path: "GroundingDINO/weights/groundingdino_swint_ogc.pth"
+  box_threshold: 0.25
+  text_threshold: 0.2
+  text_prompt: "header bar. navigation bar. toolbar. button. icon. checkbox. toggle. text input. search bar. text field. image. card. list item. bottom navigation. tab bar"
+
+adb:
+  pre_action_sleep: 0.2
+  default_swipe_duration_ms: 500
+  default_long_click_duration_ms: 1000
+  screenshot_remote_path: "/sdcard/screenshot-{index}.png"
+  ui_dump_remote_path: "/sdcard/ui_dump.xml"
+  ui_dump_local_path: "approach/temp/b/ui_dump.xml"  # HOST path -- must differ per variant
+  device_id: "emulator-5556"                        # must differ per variant
+
+actions:
+  double_tap_inter_click_sleep: 0.1
+  default_long_press_duration_ms: 1000
+  default_swipe_duration_ms: 500
+  default_wait_duration_ms: 1000
+
+visualization:
+  min_element_dim: 50
+  resize_factor: 5
+  font_scale: 1.0
+  line_thickness: 2
+  overlay_alpha: 0.8
+  rect_border_thickness: 4
+  image_resize_max_height: 600
+
+paths:
+  apps_root: "apps"
+  temp_root: "temp"
+
+runtime:
+  matplotlib_config_dir: "/tmp/matplotlib"
+  xdg_cache_home: "/tmp"
+
+logging:
+  file_level: "DEBUG"
+  console_level: "INFO"
+  format: "[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"

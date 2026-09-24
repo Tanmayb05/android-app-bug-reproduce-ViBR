@@ -8,7 +8,18 @@ It uses ADB/UI automation to inspect screens, tap/type/swipe, and run safe workf
 Always use `.venv/bin/python` (or activate `.venv/bin/activate` first):
 
 - Install: `uv sync` or `pip install -e ".[dev]"`
-- Run app: `.venv/bin/python approach/segment_replay.py <app_name> <good|bad> [--algo ssim|clip]`
+- Run app (single): `script/run_app.sh [<bug_dir>] [--config config.yml] [--device emulator-5554] [--algo ssim|clip]`
+  - Direct form: `.venv/bin/python -m approach.decision.segment_replay [<bug_dir>] [--config <path>] [--device <serial>] [--algo ssim|clip]`
+  - With no `<bug_dir>`, the first entry of `runs:` in the config is used.
+- Boot 3 emulators: `scripts/start_emulators.sh` — Pixel_6_a/b/c on ports 5554/5556/5558
+- **"run app for a,b,c" / "run apps parallely"**: `script/run_parallel.sh [<video_number>] [--only a,c] [--boot]`
+  - e.g. `script/run_parallel.sh 07` runs `data/video07{a,b,c}-*` concurrently, one per emulator.
+  - Each variant uses `config.a.yml` / `config.b.yml` / `config.c.yml`, which pin their own
+    `adb.device_id` and `adb.ui_dump_local_path` so runs never collide.
+  - With no video number, each config falls back to its own `runs[0]`.
+  - Console output per run: `logs/parallel/<label>.out`; ViBR's own logs stay in each bug dir.
+  - Prerequisite: the app must already be installed and foregrounded on each emulator —
+    nothing in this repo installs an APK.
 - Run tests: `.venv/bin/python -m pytest`
 - Run one test: `.venv/bin/python -m pytest tests/test_file.py -q`
 - Lint: `.venv/bin/python -m ruff check .`
@@ -16,7 +27,7 @@ Always use `.venv/bin/python` (or activate `.venv/bin/activate` first):
 - Typecheck: `.venv/bin/python -m mypy approach/ --ignore-missing-imports`
 
 ## Claude Skills
-- `/find-problem` — Analyze ViBR run, identify failures, write issue report with ViBR paper categories
+- `/report` — Analyze ViBR run (video + screenshots + logs), identify failures, write REPORT.md with ViBR paper root-cause categories
 
 ## Code Style
 - Python 3.11+

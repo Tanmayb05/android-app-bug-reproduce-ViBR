@@ -3,23 +3,38 @@ import logging
 import time
 from typing import Any
 
-from run_stats import record_llm_response
+from approach.core.run_stats import record_llm_response
 
 logger = logging.getLogger(__name__)
 
 _client_instance: Any = None
-_client_key: str | None = None
+_client_key: tuple[str, str] | None = None
+
+DEFAULT_LOCATION = "us-central1"
 
 
-def api_key() -> str | None:
-    return os.environ.get("GEMINI_API_KEY")
+def project() -> str | None:
+    return (
+        os.environ.get("GOOGLE_CLOUD_PROJECT")
+        or os.environ.get("GOOGLE_CLOUD_PROJECT_ID")
+        or os.environ.get("GCLOUD_PROJECT")
+    )
+
+
+def location() -> str:
+    return os.environ.get("GOOGLE_CLOUD_LOCATION", DEFAULT_LOCATION)
+
+
+def is_configured() -> bool:
+    """Gemini is available when a Vertex AI project is set. Auth is ADC."""
+    return project() is not None
 
 
 def model() -> str:
     return os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
 
-def client(api_key_override: str | None = None) -> Any:
+def client() -> Any:
     global _client_instance, _client_key
 
     try:
@@ -27,12 +42,21 @@ def client(api_key_override: str | None = None) -> Any:
     except ImportError as exc:
         raise RuntimeError("Gemini support requires the google-genai package.") from exc
 
-    resolved_key = api_key_override or api_key()
-    if not resolved_key:
-        raise RuntimeError("GEMINI_API_KEY is required for Gemini.")
+    resolved_project = project()
+    if not resolved_project:
+        raise RuntimeError(
+            "GOOGLE_CLOUD_PROJECT is required for Gemini (Vertex AI via ADC). "
+            "Run `gcloud auth application-default login` and set GOOGLE_CLOUD_PROJECT."
+        )
+    resolved_location = location()
+    resolved_key = (resolved_project, resolved_location)
 
     if _client_instance is None or _client_key != resolved_key:
-        _client_instance = genai.Client(api_key=resolved_key)
+        _client_instance = genai.Client(
+            vertexai=True,
+            project=resolved_project,
+            location=resolved_location,
+        )
         _client_key = resolved_key
 
     return _client_instance

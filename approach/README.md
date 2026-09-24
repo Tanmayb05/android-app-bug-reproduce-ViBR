@@ -37,13 +37,27 @@ and adaptively executes it on the device to reproduce the bug.
 	- After cloning run `pip install -e .` from the GroundingDINO folder or `pip install -e . --no-build-isolation` if you run into problems with torch
 	- For GroundingDINO also make sure you download the [weights](https://github.com/IDEA-Research/GroundingDINO#luggage-checkpoints) and put them in `GroundingDINO/weights`. We are using the GroundingDINO-B specifically, you can change it in `dino_detection.py`
 
-<!-- ### Android Emulator Installation
+### Android Emulator Installation
 ViBR was tested exclusively using the Emulator. While in principle the system should also work with other physical devices that appear when running `adb devices` in the command line.
 - For physical devices, USB debugging must be enabled and the device connected via USB cable.
-- By default, our project uses the standard emulator ID `emulator-5554`. If `adb devices` shows a different device ID, update the parameter in `segment_replay.py` at line 85 where the `ADBDeviceController` is initialized.
+- To choose which device ViBR drives, set `adb.device_id` in your config file (e.g. `device_id: "emulator-5554"`),
+  or pass `--device <serial>` on the command line. The resolution order is:
+  `--device` > `adb.device_id` in the config > `$ANDROID_SERIAL` > none (plain `adb`).
+- Setting a device is **required** when more than one device/emulator is attached, otherwise
+  every `adb` call fails with `more than one device/emulator`.
+
+#### Running several emulators in parallel
+`config.a.yml`, `config.b.yml` and `config.c.yml` each target one emulator
+(`emulator-5554` / `-5556` / `-5558`) and one bug-dir variant (`videoNNa` / `b` / `c`),
+with a distinct `adb.ui_dump_local_path` so concurrent runs never overwrite each other.
+
+```bash
+scripts/start_emulators.sh        # boot Pixel_6_a/b/c on ports 5554/5556/5558
+script/run_parallel.sh 07         # run data/video07{a,b,c}-* concurrently
 ```
 
-``` -->
+Note that nothing in this repo installs or launches an APK — the app under test must
+already be installed and foregrounded on each emulator before running.
 
 ### Android SDK Installation
 - **Prerequisites**
@@ -108,13 +122,13 @@ This will:
 **Terminal 2 — Run ViBR once device is ready:**
 
 ```bash
-python approach/segment_replay.py <app_name> <good|bad> [--algo ssim|clip]
+python -m approach.decision.segment_replay <app_name> <good|bad> [--algo ssim|clip]
 ```
 
 Example:
 
 ```bash
-python approach/segment_replay.py BatteryTemperatureDisplay good
+python -m approach.decision.segment_replay BatteryTemperatureDisplay good
 ```
 
 ### Execution of ViBR
@@ -124,12 +138,12 @@ python approach/segment_replay.py BatteryTemperatureDisplay good
 3. Prepare an OpenAI API key in `openai_api.py`
 4. Install the app to be tested on the device
 5. Navigate to the same starting state as the reference video
-6. Run the script in [`segment_replay.py`](./segment_replay.py) in a second terminal
+6. Run the script in [`segment_replay.py`](./decision/segment_replay.py) in a second terminal
 7. The script displays start/goal states and live device screenshots to show execution progress
 
 Example:
 
 ```bash
-python approach/segment_replay.py BatteryTemperatureDisplay good --algo ssim
+python -m approach.decision.segment_replay BatteryTemperatureDisplay good --algo ssim
 ```
 

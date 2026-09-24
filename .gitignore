@@ -84,3 +84,7 @@ uiautomator2/
 # Large model checkpoints; current local files are hundreds of MB each.
 GroundingDINO/weights/
 GroundingDINO/groundingdino/weights/
+
+# Per-variant UI dumps and parallel-run console output
+approach/temp/
+logs/parallel/

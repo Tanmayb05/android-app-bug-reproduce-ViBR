@@ -10,6 +10,20 @@
 - Try one by one.
 - Next to next week: solution to resolve one of the problems.
 
+## ViBR Step Reproduction Summary
+
+Counts below are `steps reproduced / total steps in memory.md` for the ViBR
+implementation reports in `data`, starting at video12. Videos 14-16 do not have
+A/B/C run directories in the current data set.
+
+| Video | Run A | Run B | Run C |
+| --- | --- | --- | --- |
+| video12 — amazefilemanager#3207 | 3/11 | 0/11 | 0/11 |
+| video13 — ankidroid#8973 | 0/6 | 1/6 | 0/6 |
+| video17 — activitydiary#285 | 1/9 | 0/9 | 2/9 |
+| video18 — omninotes#745 | 2/14 | 3/14 | 3/14 |
+| video19 — scarletnotes#114 | 0/12 | 0/12 | 4/12 |
+
 ## App Reviews
 
 ### Adaway
