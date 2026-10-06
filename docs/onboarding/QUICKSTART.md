@@ -116,3 +116,24 @@ ViBR/
 - [ViBR Paper](./README.md) — Full technical details
 - [Approach](./approach/README.md) — Implementation details  
 - [Evaluation](./evaluation/README.md) — Research methodology
+
+## Native benchmark run
+
+From the ViBR repository root, canonical benchmark inputs can be selected by a
+run ID while all writable artifacts remain under the matching
+`benchmark/outputs/vibr/<run-id>/` directory:
+
+```bash
+python -m approach.decision.segment_replay \
+  --config config.yml \
+  --benchmark-root ../benchmark \
+  --run-id video01a-amazefilemanager-2595
+```
+
+You can instead pass `--video-id video01 --variant a --app amazefilemanager
+--bug 2595`. The runner writes `run-manifest.json` containing command,
+timestamps, tool version, and checksums. Existing migrated/historical artifacts
+in the run directory are never overwritten. A prior execution must be moved or
+archived before rerunning that ID. If video normalization is needed, ViBR
+converts a private copy under the run output directory rather
+than modifying the canonical benchmark video.

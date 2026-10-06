@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT="/Users/tanmaybhuskute/Documents/android-app-bug-reproduce-ViBR"
+PROJECT="/Users/tanmaybhuskute/Documents/paper/benchmark-tools/VIBR"
 
 # Open project folder in VS Code
 code "$PROJECT"

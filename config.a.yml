@@ -27,8 +27,9 @@ runs:
   # - bug_dir: "data/video18a-omninotes#745"
   # - bug_dir: "data/video19a-scarletnotes#114"
   # - bug_dir: "data/video20a-amazefilemanager#1796"
-  - bug_dir: "data/video21a-geohashdroid#73"
+  # - bug_dir: "data/video21a-geohashdroid#73"
   # - bug_dir: "data/video22a-antennapod#5636"
+  - bug_dir: "data/video15d-markor#264"
 
 
 model:

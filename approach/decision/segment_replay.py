@@ -7,6 +7,7 @@ import sys
 import argparse
 import logging
 import re
+import shutil
 from pathlib import Path
 from typing import Any, List, Optional
 from math import hypot
@@ -36,17 +37,17 @@ Supports two boundary-detection algorithms:
   - ssim : pixel-level structural similarity (via yyh_utils) — default
   - clip : CLIP embedding cosine similarity (via clip_seg)
 
-Video input: <bug_dir>/video.mp4
-Log output: <bug_dir>/run.log (overwrites each run)
+By default, video input and output share ``bug_dir``. Native benchmark mode
+reads video/APK inputs from ``benchmark/inputs`` and writes only beneath the
+matching ``benchmark/outputs/vibr/<run-id>`` directory.
 
 The active bug_dir is read from the first uncommented entry in the `runs`
 list in config.yml, unless overridden on the CLI.
 
 Usage:
-    python segment_replay.py [bug_dir] [--config config.yml] [--algo ssim|clip]
-    python segment_replay.py
-    python segment_replay.py data/video03-k92#9005
-    python segment_replay.py data/video03-k92#9005 --config config.yml --algo clip
+    python -m approach.decision.segment_replay [bug_dir] [--config config.yml]
+    python -m approach.decision.segment_replay --benchmark-root ../benchmark \
+        --run-id video03a-ankidroid-9005
 """
 
 SUPPORTED_ALGORITHMS = ("ssim", "clip")
@@ -399,6 +400,9 @@ def main(
     algorithm: str | None = None,
     config_path: Path | None = None,
     device_id: str | None = None,
+    video_path: Path | None = None,
+    apk_path: Path | None = None,
+    read_only_inputs: bool = False,
 ):
     """
     Main entry point: processes video and replays UI actions segment by segment.
@@ -418,7 +422,7 @@ def main(
     model = provider_model_name(config)
     app_name = Path(bug_dir).name
 
-    paths = build_run_paths(bug_dir)
+    paths = build_run_paths(bug_dir, video=video_path, apk=apk_path)
     ensure_run_dirs(paths)
     validate_run_inputs(paths)
 
@@ -449,7 +453,21 @@ def main(
 
     video_path = paths.video
 
-    # Check and convert video format if needed
+    # Canonical benchmark inputs are immutable. If ViBR needs to normalize a
+    # video, do that to a private working copy under the run output directory.
+    if read_only_inputs:
+        from dataclasses import replace
+        from approach.check_video import check_video_format
+
+        is_valid, _ = check_video_format(video_path)
+        if not is_valid:
+            working_video = paths.run_dir / "_input" / "video.mp4"
+            working_video.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(video_path, working_video)
+            paths = replace(paths, video=working_video)
+            video_path = working_video
+
+    # Check and convert the writable input, or only validate the canonical one.
     try:
         ensure_sdr_bt709(video_path)
     except RuntimeError as e:
@@ -721,5 +739,65 @@ if __name__ == "__main__":
             "(default: adb.device_id from config, then $ANDROID_SERIAL)"
         ),
     )
+    benchmark = parser.add_argument_group("native benchmark input/output")
+    benchmark.add_argument("--benchmark-root", type=Path, default=None)
+    benchmark.add_argument("--run-id", default=None, help="Run ID: videoNNx-appslug-bugid")
+    benchmark.add_argument("--video-id", default=None, help="Explicit selector: videoNN")
+    benchmark.add_argument("--variant", choices=["a", "b", "c", "d"], default=None)
+    benchmark.add_argument("--app", dest="app_slug", default=None)
+    benchmark.add_argument("--bug", dest="bug_id", default=None)
     args = parser.parse_args()
-    main(args.bug_dir, args.algo, args.config, args.device)
+    benchmark_fields = (
+        args.benchmark_root,
+        args.run_id,
+        args.video_id,
+        args.variant,
+        args.app_slug,
+        args.bug_id,
+    )
+    if any(value is not None for value in benchmark_fields):
+        from approach.benchmark_support import (
+            BenchmarkPathError,
+            ensure_fresh_output,
+            record_run,
+            resolve_benchmark_run,
+            started_at,
+        )
+
+        command = [sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]]
+        start = started_at()
+        base_config = args.config.resolve()
+        try:
+            run = resolve_benchmark_run(args)
+            ensure_fresh_output(run)
+            main(
+                str(run.output_dir),
+                args.algo,
+                args.config,
+                args.device,
+                video_path=run.video,
+                apk_path=run.apk,
+                read_only_inputs=True,
+            )
+            record_run(
+                run,
+                command=command,
+                start=start,
+                status="success",
+                base_config=base_config,
+            )
+        except BenchmarkPathError as exc:
+            print(f"[benchmark] ERROR: {exc}", file=sys.stderr)
+            raise SystemExit(2)
+        except BaseException:
+            if "run" in locals():
+                record_run(
+                    run,
+                    command=command,
+                    start=start,
+                    status="failed",
+                    base_config=base_config,
+                )
+            raise
+    else:
+        main(args.bug_dir, args.algo, args.config, args.device)

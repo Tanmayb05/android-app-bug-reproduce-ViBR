@@ -27,6 +27,19 @@ def test_build_run_paths_accepts_path_and_str(tmp_path):
     assert from_str == from_path
 
 
+def test_build_run_paths_supports_external_inputs(tmp_path):
+    run_dir = tmp_path / "outputs" / "video01a-demo-42"
+    video = tmp_path / "inputs" / "video01-demo-42" / "videos" / "a.mp4"
+    apk = tmp_path / "inputs" / "video01-demo-42" / "demo.apk"
+
+    paths = build_run_paths(run_dir, video=video, apk=apk)
+
+    assert paths.run_dir == run_dir
+    assert paths.video == video
+    assert paths.apk == apk
+    assert paths.summary_json == run_dir / "summary.json"
+
+
 def test_build_run_paths_creates_no_filesystem_entries(tmp_path):
     bug_dir = tmp_path / "video01-app#1"
     build_run_paths(bug_dir)

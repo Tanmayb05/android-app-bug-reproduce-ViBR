@@ -21,13 +21,18 @@ class RunPaths:
     cache_dir: Path
 
 
-def build_run_paths(bug_dir: str | Path) -> RunPaths:
-    """Compose all run paths under bug_dir. Pure: no filesystem access."""
+def build_run_paths(
+    bug_dir: str | Path,
+    *,
+    video: str | Path | None = None,
+    apk: str | Path | None = None,
+) -> RunPaths:
+    """Compose run outputs under bug_dir with optional external inputs."""
     run_dir = Path(bug_dir)
     return RunPaths(
         run_dir=run_dir,
-        video=run_dir / "video.mp4",
-        apk=run_dir / "app.apk",
+        video=Path(video) if video is not None else run_dir / "video.mp4",
+        apk=Path(apk) if apk is not None else run_dir / "app.apk",
         debug_log=run_dir / "debug.log",
         issue_md=run_dir / "issue.md",
         summary_json=run_dir / "summary.json",
@@ -50,3 +55,5 @@ def validate_run_inputs(paths: RunPaths) -> None:
     """Raise FileNotFoundError if required pre-populated inputs are missing."""
     if not paths.video.exists():
         raise FileNotFoundError(f"Video not found: {paths.video}")
+    if not paths.apk.exists():
+        raise FileNotFoundError(f"APK not found: {paths.apk}")

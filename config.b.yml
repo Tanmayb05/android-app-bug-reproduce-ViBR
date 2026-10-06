@@ -27,8 +27,9 @@ runs:
   # - bug_dir: "data/video18b-omninotes#745"
   # - bug_dir: "data/video19b-scarletnotes#114"
   # - bug_dir: "data/video20b-amazefilemanager#1796"
-  - bug_dir: "data/video21b-geohashdroid#73"
+  # - bug_dir: "data/video21b-geohashdroid#73"
   # - bug_dir: "data/video22b-antennapod#5636"
+  - bug_dir: "../../benchmark/outputs/vibr/video07b-wordpress-15026"
 
 model:
   provider: "gemini"          # "openai" | "gemini"
